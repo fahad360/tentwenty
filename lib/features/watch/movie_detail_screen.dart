@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../booking/screens/ticket_booking_screen.dart';
 import 'models/movie.dart';
 
 class MovieDetailScreen extends StatelessWidget {
@@ -103,7 +104,15 @@ class MovieDetailScreen extends StatelessWidget {
                     width: 243,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                TicketBookingScreen(movie: movie),
+                          ),
+                        );
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF61C3F2),
                         shape: RoundedRectangleBorder(
@@ -156,7 +165,15 @@ class MovieDetailScreen extends StatelessWidget {
                     child: SizedBox(
                       height: 50,
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  TicketBookingScreen(movie: movie),
+                            ),
+                          );
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF61C3F2),
                           shape: RoundedRectangleBorder(
