@@ -199,51 +199,57 @@ class SkeletonTicketBooking extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 20),
-          SkeletonContainer(width: 100, height: 20),
-          const SizedBox(height: 20),
-          // Dates
-          Row(
-            children: List.generate(
-              4,
-              (index) => Padding(
-                padding: const EdgeInsets.only(right: 12),
-                child: SkeletonContainer(
-                  width: 70,
-                  height: 40,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 30),
-          // Showtimes
-          Expanded(
-            child: ListView.builder(
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 20),
+            SkeletonContainer(width: 100, height: 20),
+            const SizedBox(height: 20),
+            // Dates
+            SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              itemCount: 3,
-              itemBuilder: (context, index) => Padding(
-                padding: const EdgeInsets.only(right: 20),
-                child: Column(
-                  children: [
-                    SkeletonContainer(width: 250, height: 20),
-                    const SizedBox(height: 10),
-                    SkeletonContainer(
-                      width: 250,
-                      height: 180,
+              child: Row(
+                children: List.generate(
+                  4,
+                  (index) => Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: SkeletonContainer(
+                      width: 70,
+                      height: 40,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 30),
+            // Showtimes
+            SizedBox(
+              height: 250,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: 3,
+                itemBuilder: (context, index) => Padding(
+                  padding: const EdgeInsets.only(right: 20),
+                  child: Column(
+                    children: [
+                      SkeletonContainer(width: 250, height: 20),
+                      const SizedBox(height: 10),
+                      SkeletonContainer(
+                        width: 250,
+                        height: 180,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

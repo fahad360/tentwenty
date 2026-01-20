@@ -62,7 +62,7 @@ class MovieHeroHeader extends StatelessWidget {
               Column(
                 children: [
                   SizedBox(
-                    width: 243,
+                    width: 260,
                     height: 50,
                     child: ElevatedButton(
                       onPressed: () {
@@ -92,7 +92,7 @@ class MovieHeroHeader extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   SizedBox(
-                    width: 243,
+                    width: 260,
                     height: 50,
                     child: OutlinedButton.icon(
                       onPressed: () {
@@ -151,7 +151,7 @@ class MovieHeroHeader extends StatelessWidget {
                         child: const Text(
                           'Get Tickets',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: AppColors.white,
                           ),
@@ -176,7 +176,7 @@ class MovieHeroHeader extends StatelessWidget {
                         label: const Text(
                           'Watch Trailer',
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: AppColors.white,
                           ),
