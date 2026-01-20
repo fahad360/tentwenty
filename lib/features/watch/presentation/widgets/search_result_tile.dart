@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../data/models/movie.dart';
+import '../../domain/entities/movie_entity.dart';
 
 class SearchResultTile extends StatelessWidget {
-  final Movie movie;
+  final MovieEntity movie;
 
   const SearchResultTile({super.key, required this.movie});
 

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../../../features/watch/data/models/movie.dart';
+import '../../../../features/watch/domain/entities/movie_entity.dart';
 import '../../../../features/booking/presentation/pages/ticket_booking_screen.dart';
 
 class MovieDetailScreen extends StatelessWidget {
-  final Movie movie;
+  final MovieEntity movie;
 
   const MovieDetailScreen({super.key, required this.movie});
 
@@ -77,15 +77,19 @@ class MovieDetailScreen extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.black.withOpacity(0.3),
+              Colors.black.withValues(alpha: 0.3),
               Colors.transparent,
-              Colors.black.withOpacity(0.8),
+              Colors.black.withValues(alpha: 0.8),
             ],
             stops: const [0.0, 0.5, 1.0],
           ),
         ),
         padding: const EdgeInsets.all(20),
         child: Column(
+          // mainAxisAlignment: MainAxisAlignment.end, // User snippet had this.
+          // BUT wait, looking at the snippet in the request:
+          // mainAxisAlignment: MainAxisAlignment.end,
+          // crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.end,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [

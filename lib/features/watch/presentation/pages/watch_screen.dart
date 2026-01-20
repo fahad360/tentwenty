@@ -1,7 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../../data/models/movie.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../injection_container.dart';
+import '../../domain/entities/movie_entity.dart';
 import '../../data/models/genre.dart';
+import '../bloc/watch_bloc.dart';
+import '../bloc/watch_event.dart';
+import '../bloc/watch_state.dart';
 import '../widgets/movie_card.dart';
 import '../widgets/genre_card.dart';
 import '../widgets/search_result_tile.dart';
@@ -18,49 +23,9 @@ class _WatchScreenState extends State<WatchScreen> {
   bool _isSearchActive = false;
   bool _isSearchSubmitted = false;
   final TextEditingController _searchController = TextEditingController();
-  List<Movie> _searchResults = [];
   Timer? _debounce;
 
-  // Data
-  final List<Movie> _movies = [
-    Movie(
-      title: 'Free Guy',
-      imageUrl: 'https://picsum.photos/seed/freeguy/800/600',
-      category: 'Fantasy',
-    ),
-    Movie(
-      title: 'The King\'s Man',
-      imageUrl: 'https://picsum.photos/seed/kingsman/800/600',
-      category: 'Action',
-    ),
-    Movie(
-      title: 'Jojo Rabbit',
-      imageUrl: 'https://picsum.photos/seed/jojorabbit/800/600',
-      category: 'Drama',
-    ),
-    Movie(
-      title: 'Sci-Fi Hits',
-      imageUrl: 'https://picsum.photos/seed/scifi/800/600',
-      category: 'Sci-Fi',
-    ),
-    // Extra movies for search demo
-    Movie(
-      title: 'Time to Hunt',
-      imageUrl: 'https://picsum.photos/seed/timetohunt/800/600',
-      category: 'Thriller',
-    ),
-    Movie(
-      title: 'In Time',
-      imageUrl: 'https://picsum.photos/seed/intime/800/600',
-      category: 'Sci-Fi',
-    ),
-    Movie(
-      title: 'A Time to Kill',
-      imageUrl: 'https://picsum.photos/seed/atimetokill/800/600',
-      category: 'Crime',
-    ),
-  ];
-
+  // Mock Genres (Keep local for now as no API for genres yet)
   final List<Genre> _genres = [
     Genre(
       title: 'Comedies',
@@ -108,18 +73,19 @@ class _WatchScreenState extends State<WatchScreen> {
     super.dispose();
   }
 
-  void _toggleSearch() {
+  void _toggleSearch(BuildContext context) {
     setState(() {
       _isSearchActive = !_isSearchActive;
       if (!_isSearchActive) {
         _searchController.clear();
         _isSearchSubmitted = false;
-        _searchResults.clear();
+        // Reset to initial state
+        context.read<WatchBloc>().add(GetUpcomingMovies());
       }
     });
   }
 
-  void _onSearchChanged(String query) {
+  void _onSearchChanged(BuildContext context, String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
 
     // Reset submitted state if user types again
@@ -131,72 +97,96 @@ class _WatchScreenState extends State<WatchScreen> {
 
     _debounce = Timer(const Duration(milliseconds: 800), () {
       if (query.isNotEmpty) {
-        setState(() {
-          // Simple mock filter
-          _searchResults = _movies.where((movie) {
-            return movie.title.toLowerCase().contains(query.toLowerCase());
-          }).toList();
-        });
+        context.read<WatchBloc>().add(SearchMovies(query));
       } else {
-        setState(() {
-          _searchResults = [];
-        });
+        context.read<WatchBloc>().add(GetUpcomingMovies());
       }
     });
   }
 
-  void _onSearchSubmitted(String query) {
+  void _onSearchSubmitted(BuildContext context, String query) {
     if (query.isEmpty) return;
     setState(() {
       _isSearchSubmitted = true;
-      // Ensure results are up to date immediately on submit without wait
-      _searchResults = _movies.where((movie) {
-        return movie.title.toLowerCase().contains(query.toLowerCase());
-      }).toList();
     });
+    context.read<WatchBloc>().add(SearchMovies(query));
   }
 
   @override
   Widget build(BuildContext context) {
-    // 3 Main Views:
-    // 1. Search Submitted (New Screen look)
-    // 2. Search Active (Search Bar + (Grid OR Top Results))
-    // 3. Normal List Helper
+    return BlocProvider(
+      create: (_) => sl<WatchBloc>()..add(GetUpcomingMovies()),
+      child: Builder(
+        builder: (context) {
+          return Scaffold(
+            appBar: _isSearchActive
+                ? null
+                : AppBar(
+                    title: const Text('Watch'),
+                    actions: [
+                      IconButton(
+                        icon: const Icon(Icons.search),
+                        onPressed: () => _toggleSearch(context),
+                      ),
+                    ],
+                  ),
+            body: BlocBuilder<WatchBloc, WatchState>(
+              builder: (context, state) {
+                if (_isSearchSubmitted) {
+                  if (state is WatchLoaded) {
+                    return _buildResultsFoundView(context, state.movies);
+                  } else if (state is WatchLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (state is WatchError) {
+                    return Center(child: Text(state.message));
+                  }
+                }
 
-    if (_isSearchSubmitted) {
-      return _buildResultsFoundView();
-    }
-
-    return Scaffold(
-      appBar: _isSearchActive
-          ? null
-          : AppBar(
-              title: const Text('Watch'),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.search),
-                  onPressed: _toggleSearch,
-                ),
-              ],
+                return _isSearchActive
+                    ? _buildSearchInputView(context, state)
+                    : _buildMovieListView(state);
+              },
             ),
-      body: _isSearchActive ? _buildSearchInputView() : _buildMovieListView(),
+          );
+        },
+      ),
     );
   }
 
   // --- View Builders ---
 
-  Widget _buildMovieListView() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(20),
-      itemCount: _movies.length,
-      itemBuilder: (context, index) {
-        return MovieCard(movie: _movies[index]);
-      },
-    );
+  Widget _buildMovieListView(WatchState state) {
+    if (state is WatchLoading) {
+      return const Center(child: CircularProgressIndicator());
+    } else if (state is WatchError) {
+      return Center(child: Text(state.message));
+    } else if (state is WatchLoaded) {
+      return ListView.builder(
+        padding: const EdgeInsets.all(20),
+        itemCount: state.movies.length,
+        itemBuilder: (context, index) {
+          // Temporarily map Entity to Widget expected format if needed
+          // Assuming Widget handles Entity or we map it.
+          // MovieCard expects Movie model/entity.
+          // Note: MovieCard currently imports 'data/models/movie.dart' which we deleted/renamed?
+          // We implemented MovieModel which extends MovieEntity.
+          // MovieCard needs to accept MovieEntity.
+          // I will need to update MovieCard to accept MovieEntity.
+          return MovieCard(movie: state.movies[index]);
+        },
+      );
+    }
+    return const SizedBox.shrink();
   }
 
-  Widget _buildSearchInputView() {
+  Widget _buildSearchInputView(BuildContext context, WatchState state) {
     bool showTopResults = _searchController.text.isNotEmpty;
+
+    // If we are searching, check if we have results
+    List<MovieEntity> results = [];
+    if (state is WatchLoaded) {
+      results = state.movies;
+    }
 
     return Column(
       children: [
@@ -211,8 +201,8 @@ class _WatchScreenState extends State<WatchScreen> {
             ),
             child: TextField(
               controller: _searchController,
-              onChanged: _onSearchChanged,
-              onSubmitted: _onSearchSubmitted,
+              onChanged: (val) => _onSearchChanged(context, val),
+              onSubmitted: (val) => _onSearchSubmitted(context, val),
               decoration: InputDecoration(
                 filled: true,
                 fillColor: const Color(0xFFEFEFEF),
@@ -221,7 +211,7 @@ class _WatchScreenState extends State<WatchScreen> {
                 prefixIcon: const Icon(Icons.search, color: Color(0xFF2E2739)),
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.close, color: Color(0xFF2E2739)),
-                  onPressed: _toggleSearch,
+                  onPressed: () => _toggleSearch(context),
                 ),
                 contentPadding: const EdgeInsets.symmetric(vertical: 0),
                 border: OutlineInputBorder(
@@ -235,7 +225,9 @@ class _WatchScreenState extends State<WatchScreen> {
         Expanded(
           child: Container(
             color: const Color(0xFFF2F2F6),
-            child: showTopResults ? _buildTopResultsList() : _buildGenreGrid(),
+            child: showTopResults
+                ? _buildTopResultsList(state, results)
+                : _buildGenreGrid(),
           ),
         ),
       ],
@@ -258,8 +250,12 @@ class _WatchScreenState extends State<WatchScreen> {
     );
   }
 
-  Widget _buildTopResultsList() {
-    if (_searchResults.isEmpty) {
+  Widget _buildTopResultsList(WatchState state, List<MovieEntity> results) {
+    if (state is WatchLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (results.isEmpty) {
       return const Center(child: Text('No results found'));
     }
 
@@ -280,11 +276,11 @@ class _WatchScreenState extends State<WatchScreen> {
         Expanded(
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            itemCount: _searchResults.length,
+            itemCount: results.length,
             separatorBuilder: (context, index) =>
                 const Divider(color: Color(0xFFEFEFEF)),
             itemBuilder: (context, index) {
-              return SearchResultTile(movie: _searchResults[index]);
+              return SearchResultTile(movie: results[index]);
             },
           ),
         ),
@@ -292,7 +288,10 @@ class _WatchScreenState extends State<WatchScreen> {
     );
   }
 
-  Widget _buildResultsFoundView() {
+  Widget _buildResultsFoundView(
+    BuildContext context,
+    List<MovieEntity> results,
+  ) {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -301,10 +300,12 @@ class _WatchScreenState extends State<WatchScreen> {
             setState(() {
               _isSearchSubmitted = false;
             });
+            // Revert to search active state visuals with previous query
+            // Ideally we re-fetch if needed or keep state
           },
         ),
         title: Text(
-          '${_searchResults.length} Results Found',
+          '${results.length} Results Found',
           style: const TextStyle(
             color: Colors.black,
             fontSize: 16,
@@ -315,9 +316,9 @@ class _WatchScreenState extends State<WatchScreen> {
       ),
       body: ListView.builder(
         padding: const EdgeInsets.all(20),
-        itemCount: _searchResults.length,
+        itemCount: results.length,
         itemBuilder: (context, index) {
-          return SearchResultTile(movie: _searchResults[index]);
+          return SearchResultTile(movie: results[index]);
         },
       ),
     );

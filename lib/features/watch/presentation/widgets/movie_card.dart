@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../../data/models/movie.dart';
+import '../../domain/entities/movie_entity.dart';
 import '../../../movie_details/presentation/pages/movie_detail_screen.dart';
 
 class MovieCard extends StatelessWidget {
-  final Movie movie;
+  final MovieEntity movie;
 
   const MovieCard({super.key, required this.movie});
 
@@ -39,7 +39,7 @@ class MovieCard extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
+              colors: [Colors.transparent, Colors.black.withValues(alpha: 0.7)],
             ),
           ),
           width: double.infinity,

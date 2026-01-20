@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../../../watch/data/models/movie.dart';
+import '../../../watch/domain/entities/movie_entity.dart';
 import '../../data/models/cinema_data.dart';
 
 class SeatSelectionScreen extends StatefulWidget {
-  final Movie movie;
+  final MovieEntity movie;
   final String date;
   final Showtime showtime;
 
@@ -430,7 +430,7 @@ class ScreenPainter extends CustomPainter {
 
     // Shadow effect
     final shadowPaint = Paint()
-      ..color = const Color(0xFF61C3F2).withOpacity(0.1)
+      ..color = const Color(0xFF61C3F2).withValues(alpha: 0.1)
       ..style = PaintingStyle.fill;
 
     final shadowPath = Path();
@@ -446,7 +446,3 @@ class ScreenPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
-
-// Helper to mimic For-Loop in Lists
-// Replaced with logic inside build
-// Removed Helper

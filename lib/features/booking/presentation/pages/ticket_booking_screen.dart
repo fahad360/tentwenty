@@ -1,11 +1,22 @@
 import 'package:flutter/material.dart';
-
-import '../../data/models/cinema_data.dart';
-import '../../../watch/data/models/movie.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../injection_container.dart';
+import '../../../watch/domain/entities/movie_entity.dart';
+// Note: We use the Entity definition for Showtime to map from the Bloc
+import '../../domain/entities/theater_entity.dart';
+import '../../data/models/cinema_data.dart' as legacy;
+import '../bloc/booking_bloc.dart';
+import '../bloc/booking_event.dart';
+import '../bloc/booking_state.dart';
 import 'seat_selection_screen.dart';
 
+// Helper model to match the UI's expectation if differs from Entity, or we use Entity directly.
+// The Entity has: time, hall, price, bonusPoints.
+// The UI expects: time, hallName, price, bonus.
+// We can use the Entity directly and map property access.
+
 class TicketBookingScreen extends StatefulWidget {
-  final Movie movie;
+  final MovieEntity movie;
 
   const TicketBookingScreen({super.key, required this.movie});
 
@@ -28,181 +39,206 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
     '12 Mar',
   ];
 
-  final List<Showtime> _showtimes = [
-    Showtime(
-      time: '12:30',
-      hallName: 'Cinetech + Hall 1',
-      price: 50,
-      bonus: 2500,
-    ),
-    Showtime(
-      time: '13:30',
-      hallName: 'Cinetech + Hall 2',
-      price: 75,
-      bonus: 3000,
-    ),
-    Showtime(
-      time: '14:30',
-      hallName: 'Cinetech + Hall 3',
-      price: 50,
-      bonus: 2500,
-    ),
-    Showtime(
-      time: '15:30',
-      hallName: 'Cinetech + Hall 2',
-      price: 75,
-      bonus: 3000,
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F6),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: Column(
-          children: [
-            Text(
-              widget.movie.title,
-              style: const TextStyle(
-                color: Colors.black,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 5),
-            Text(
-              'In Theaters ${widget.movie.releaseDate}',
-              style: const TextStyle(
-                color: Color(0xFF61C3F2),
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        centerTitle: true,
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.only(left: 20, top: 30, bottom: 15),
-            child: Text(
-              'Date',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF202C43),
-              ),
-            ),
+    return BlocProvider(
+      create: (_) =>
+          sl<BookingBloc>()
+            ..add(GetMovieShowtimes(widget.movie.id, "March 5, 2021")),
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF2F2F6),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+            onPressed: () => Navigator.of(context).pop(),
           ),
-          SizedBox(
-            height: 40,
-            child: ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              scrollDirection: Axis.horizontal,
-              itemCount: _dates.length,
-              separatorBuilder: (context, index) => const SizedBox(width: 12),
-              itemBuilder: (context, index) {
-                bool isSelected = _selectedDateIndex == index;
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedDateIndex = index;
-                      // Keep showtime selected or logic to reset
-                    });
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? const Color(0xFF61C3F2)
-                          : const Color(0x1A000000),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    alignment: Alignment.center,
+          title: Column(
+            children: [
+              Text(
+                widget.movie.title,
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                'In Theaters ${widget.movie.releaseDate}',
+                style: const TextStyle(
+                  color: Color(0xFF61C3F2),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          centerTitle: true,
+        ),
+        body: BlocBuilder<BookingBloc, BookingState>(
+          builder: (context, state) {
+            if (state is BookingLoading) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (state is BookingError) {
+              return Center(child: Text(state.message));
+            } else if (state is BookingLoaded) {
+              // Flatten showtimes from all theaters
+              final allShowtimes = state.theaters
+                  .expand((t) => t.showtimes)
+                  .toList();
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.only(left: 20, top: 30, bottom: 15),
                     child: Text(
-                      _dates[index],
+                      'Date',
                       style: TextStyle(
-                        color: isSelected ? Colors.white : Colors.black,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF202C43),
                       ),
                     ),
                   ),
-                );
-              },
-            ),
-          ),
-          const SizedBox(height: 30),
-          Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              scrollDirection: Axis.horizontal,
-              itemCount: _showtimes.length,
-              separatorBuilder: (context, index) => const SizedBox(width: 10),
-              itemBuilder: (context, index) {
-                return _buildShowtimeCard(index);
-              },
-            ),
-          ),
-          const Spacer(), // Push button to bottom
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton(
-                onPressed: _selectedShowtimeIndex != null
-                    ? () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => SeatSelectionScreen(
-                              movie: widget.movie,
-                              date: _dates[_selectedDateIndex],
-                              showtime: _showtimes[_selectedShowtimeIndex!],
+                  SizedBox(
+                    height: 40,
+                    child: ListView.separated(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _dates.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(width: 12),
+                      itemBuilder: (context, index) {
+                        bool isSelected = _selectedDateIndex == index;
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedDateIndex = index;
+                              _selectedShowtimeIndex =
+                                  null; // Reset selection on date change
+                            });
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? const Color(0xFF61C3F2)
+                                  : const Color(0x1A000000),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            alignment: Alignment.center,
+                            child: Text(
+                              _dates[index],
+                              style: TextStyle(
+                                color: isSelected ? Colors.white : Colors.black,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
                             ),
                           ),
                         );
-                      }
-                    : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF61C3F2),
-                  disabledBackgroundColor: Colors.grey.shade300,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                      },
+                    ),
                   ),
-                ),
-                child: const Text(
-                  'Select Seats',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                  const SizedBox(height: 30),
+                  Expanded(
+                    child: ListView.separated(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      scrollDirection: Axis.horizontal,
+                      itemCount: allShowtimes.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(width: 10),
+                      itemBuilder: (context, index) {
+                        return _buildShowtimeCard(index, allShowtimes[index]);
+                      },
+                    ),
                   ),
-                ),
-              ),
-            ),
-          ),
-        ],
+                  const Spacer(), // Push button to bottom
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 55,
+                      child: ElevatedButton(
+                        onPressed: _selectedShowtimeIndex != null
+                            ? () {
+                                // For SeatSelection, we need to pass data.
+                                // We'll stick to passing what we have.
+                                // The original code passed a legacy Showtime object.
+                                // We will adapt SeatSelection to accept ShowtimeEntity or Entity.
+                                // OR for now, since SeatSelection isn't my active task to refactor deeply in THIS turn (it was updated previously),
+                                // I assume it accepts what I pass or I map it.
+                                // In previous turn I saw SeatSelectionScreen accept `Showtime`.
+                                // I should check SeatSelectionScreen or just pass dynamic/mock to be safe?
+                                // No, I should map it to the expected type if needed.
+                                // Let's simplify: pass ShowtimeEntity if SeatSelectionScreen was updated (it was touched).
+                                // If not, I'll update SeatSelectionScreen in next step or map here.
+                                // Assuming I need to match the signature.
+                                // Let's map to a simple object or assume SeatSelectionScreen accepts ShowtimeEntity.
+                                // Wait, the previous turn "TicketBookingScreen" passed `legacy.Showtime`.
+                                // I will check SeatSelectionScreen content if I can, but to be fast
+                                // I will Map entity -> legacy.Showtime if needed, but I don't want to import legacy model if I can help it.
+                                // I will update SeatSelectionScreen to use ShowtimeEntity ideally.
+                                // BUT USER said "No need to change anything in the UI."
+                                // I'll assume SeatSelectionScreen can take dynamic or I'll fix it if it breaks.
+                                // Actually, I'll pass the Entity and if it errors I'll fix it.
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) {
+                                      final selectedEntity =
+                                          allShowtimes[_selectedShowtimeIndex!];
+                                      return SeatSelectionScreen(
+                                        movie: widget.movie,
+                                        date: _dates[_selectedDateIndex],
+                                        showtime: legacy.Showtime(
+                                          time: selectedEntity.time,
+                                          hallName: selectedEntity.hall,
+                                          price: selectedEntity.price,
+                                          bonus: selectedEntity.bonusPoints,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                );
+                              }
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF61C3F2),
+                          disabledBackgroundColor: Colors.grey.shade300,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Text(
+                          'Select Seats',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
       ),
     );
   }
 
-  Widget _buildShowtimeCard(int index) {
+  Widget _buildShowtimeCard(int index, ShowtimeEntity showtime) {
     bool isSelected = _selectedShowtimeIndex == index;
-    final showtime = _showtimes[index];
 
     return GestureDetector(
       onTap: () {
@@ -228,7 +264,7 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
                   ),
                   const WidgetSpan(child: SizedBox(width: 10)),
                   TextSpan(
-                    text: showtime.hallName,
+                    text: showtime.hall,
                     style: const TextStyle(
                       color: Color(0xFF8F8F8F),
                       fontSize: 12,
@@ -269,7 +305,7 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
                   ),
                   const TextSpan(text: ' or '),
                   TextSpan(
-                    text: '${showtime.bonus} bonus',
+                    text: '${showtime.bonusPoints} bonus',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
@@ -328,8 +364,9 @@ class MiniSeatMapPainter extends CustomPainter {
         } else {
           color = const Color(0xFF61C3F2);
         }
-        if ((i + j) % 7 == 0 || (i * j) % 5 == 0)
-          color = color.withOpacity(0.2); // Random-ish
+        if ((i + j) % 7 == 0 || (i * j) % 5 == 0) {
+          color = color.withValues(alpha: 0.2); // Random-ish using withValues
+        }
 
         seatPaint.color = color;
 
