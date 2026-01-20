@@ -9,24 +9,32 @@ part of 'movie_model.dart';
 MovieModel _$MovieModelFromJson(Map<String, dynamic> json) => MovieModel(
   id: (json['id'] as num).toInt(),
   title: json['title'] as String,
-  imageUrl: json['imageUrl'] as String,
-  category: json['category'] as String,
-  overview: json['overview'] as String? ?? '',
-  releaseDate: json['releaseDate'] as String? ?? '',
-  genres:
-      (json['genres'] as List<dynamic>?)?.map((e) => e as String).toList() ??
-      const [],
-  trailerUrl: json['trailerUrl'] as String? ?? '',
+  posterPath: json['poster_path'] as String?,
+  backdropPath: json['backdrop_path'] as String?,
+  genreIds: (json['genre_ids'] as List<dynamic>?)
+      ?.map((e) => (e as num).toInt())
+      .toList(),
+  overview: json['overview'] as String?,
+  releaseDateRaw: json['release_date'] as String?,
 );
 
 Map<String, dynamic> _$MovieModelToJson(MovieModel instance) =>
     <String, dynamic>{
       'id': instance.id,
       'title': instance.title,
-      'imageUrl': instance.imageUrl,
-      'category': instance.category,
       'overview': instance.overview,
-      'releaseDate': instance.releaseDate,
-      'genres': instance.genres,
-      'trailerUrl': instance.trailerUrl,
+      'poster_path': instance.posterPath,
+      'backdrop_path': instance.backdropPath,
+      'genre_ids': instance.genreIds,
+      'release_date': instance.releaseDateRaw,
     };
+
+MovieResponse _$MovieResponseFromJson(Map<String, dynamic> json) =>
+    MovieResponse(
+      results: (json['results'] as List<dynamic>)
+          .map((e) => MovieModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+
+Map<String, dynamic> _$MovieResponseToJson(MovieResponse instance) =>
+    <String, dynamic>{'results': instance.results};

@@ -66,10 +66,14 @@ class MovieDetailScreen extends StatelessWidget {
       height: isPortrait ? 500 : double.infinity,
       width: double.infinity,
       decoration: BoxDecoration(
-        image: DecorationImage(
-          image: NetworkImage(movie.imageUrl),
-          fit: BoxFit.cover,
-        ),
+        color: Colors.grey[800], // Fallback background
+        image: movie.imageUrl.isNotEmpty
+            ? DecorationImage(
+                image: NetworkImage(movie.imageUrl),
+                fit: BoxFit.cover,
+                onError: (exception, stackTrace) {}, // Handle network errors
+              )
+            : null,
       ),
       child: Container(
         decoration: BoxDecoration(

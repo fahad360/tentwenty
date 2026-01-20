@@ -2,18 +2,18 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/errors/error_model.dart';
 import '../../domain/entities/movie_entity.dart';
 import '../../domain/repositories/movie_repository.dart';
-import '../datasources/movie_remote_data_source.dart';
+import '../datasources/movie_service.dart';
 
 class MovieRepositoryImpl implements MovieRepository {
-  final MovieRemoteDataSource remoteDataSource;
+  final MovieService _movieService;
 
-  MovieRepositoryImpl(this.remoteDataSource);
+  MovieRepositoryImpl(this._movieService);
 
   @override
   Future<Either<Failure, List<MovieEntity>>> getUpcomingMovies() async {
     try {
-      final remoteMovies = await remoteDataSource.getUpcomingMovies();
-      return Right(remoteMovies);
+      final response = await _movieService.getUpcomingMovies();
+      return Right(response.results);
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }
@@ -22,8 +22,8 @@ class MovieRepositoryImpl implements MovieRepository {
   @override
   Future<Either<Failure, List<MovieEntity>>> searchMovies(String query) async {
     try {
-      final remoteMovies = await remoteDataSource.searchMovies(query);
-      return Right(remoteMovies);
+      final response = await _movieService.searchMovies(query);
+      return Right(response.results);
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }

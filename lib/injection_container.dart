@@ -1,6 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'core/client/dio_client.dart';
-import 'features/watch/data/datasources/movie_remote_data_source.dart';
+import 'features/watch/data/datasources/movie_service.dart';
 import 'features/watch/data/repositories/movie_repository_impl.dart';
 import 'features/watch/domain/repositories/movie_repository.dart';
 import 'features/watch/domain/usecases/get_upcoming_movies_usecase.dart';
@@ -31,10 +31,8 @@ Future<void> initDependencies() async {
   // Repository
   sl.registerLazySingleton<MovieRepository>(() => MovieRepositoryImpl(sl()));
 
-  // Data Sources
-  sl.registerLazySingleton<MovieRemoteDataSource>(
-    () => MovieRemoteDataSourceImpl(),
-  );
+  // Services
+  sl.registerLazySingleton(() => MovieService(sl<DioClient>().dio));
 
   // Features - Booking
   // Bloc

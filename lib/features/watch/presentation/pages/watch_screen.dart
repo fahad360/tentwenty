@@ -10,6 +10,7 @@ import '../bloc/watch_state.dart';
 import '../widgets/movie_card.dart';
 import '../widgets/genre_card.dart';
 import '../widgets/search_result_tile.dart';
+import '../../../movie_details/presentation/pages/movie_detail_screen.dart';
 
 class WatchScreen extends StatefulWidget {
   const WatchScreen({super.key});
@@ -144,7 +145,7 @@ class _WatchScreenState extends State<WatchScreen> {
 
                 return _isSearchActive
                     ? _buildSearchInputView(context, state)
-                    : _buildMovieListView(state);
+                    : _buildMovieListView(context, state);
               },
             ),
           );
@@ -155,25 +156,24 @@ class _WatchScreenState extends State<WatchScreen> {
 
   // --- View Builders ---
 
-  Widget _buildMovieListView(WatchState state) {
+  Widget _buildMovieListView(BuildContext context, WatchState state) {
     if (state is WatchLoading) {
       return const Center(child: CircularProgressIndicator());
     } else if (state is WatchError) {
       return Center(child: Text(state.message));
     } else if (state is WatchLoaded) {
-      return ListView.builder(
-        padding: const EdgeInsets.all(20),
-        itemCount: state.movies.length,
-        itemBuilder: (context, index) {
-          // Temporarily map Entity to Widget expected format if needed
-          // Assuming Widget handles Entity or we map it.
-          // MovieCard expects Movie model/entity.
-          // Note: MovieCard currently imports 'data/models/movie.dart' which we deleted/renamed?
-          // We implemented MovieModel which extends MovieEntity.
-          // MovieCard needs to accept MovieEntity.
-          // I will need to update MovieCard to accept MovieEntity.
-          return MovieCard(movie: state.movies[index]);
+      return RefreshIndicator(
+        onRefresh: () async {
+          context.read<WatchBloc>().add(GetUpcomingMovies());
         },
+        child: ListView.builder(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(20),
+          itemCount: state.movies.length,
+          itemBuilder: (context, index) {
+            return MovieCard(movie: state.movies[index]);
+          },
+        ),
       );
     }
     return const SizedBox.shrink();
@@ -280,7 +280,18 @@ class _WatchScreenState extends State<WatchScreen> {
             separatorBuilder: (context, index) =>
                 const Divider(color: Color(0xFFEFEFEF)),
             itemBuilder: (context, index) {
-              return SearchResultTile(movie: results[index]);
+              return SearchResultTile(
+                movie: results[index],
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          MovieDetailScreen(movie: results[index]),
+                    ),
+                  );
+                },
+              );
             },
           ),
         ),
@@ -318,7 +329,18 @@ class _WatchScreenState extends State<WatchScreen> {
         padding: const EdgeInsets.all(20),
         itemCount: results.length,
         itemBuilder: (context, index) {
-          return SearchResultTile(movie: results[index]);
+          return SearchResultTile(
+            movie: results[index],
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      MovieDetailScreen(movie: results[index]),
+                ),
+              );
+            },
+          );
         },
       ),
     );
