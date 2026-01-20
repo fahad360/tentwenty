@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:collection/collection.dart';
 
 import '../../../../features/watch/domain/entities/movie_entity.dart';
 import '../../../../features/booking/presentation/pages/ticket_booking_screen.dart';
@@ -8,6 +9,7 @@ import '../../../../injection_container.dart';
 import '../bloc/movie_detail_bloc.dart';
 import '../bloc/movie_detail_event.dart';
 import '../bloc/movie_detail_state.dart';
+import 'video_player_screen.dart';
 
 class MovieDetailScreen extends StatefulWidget {
   final MovieEntity movie;
@@ -24,30 +26,63 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
     return BlocProvider(
       create: (_) =>
           sl<MovieDetailBloc>()..add(GetMovieDetails(widget.movie.id)),
-      child: BlocBuilder<MovieDetailBloc, MovieDetailState>(
-        builder: (context, state) {
-          final movie = state is MovieDetailLoaded ? state.movie : widget.movie;
+      child: BlocListener<MovieDetailBloc, MovieDetailState>(
+        listener: (context, state) {
+          if (state is MovieTrailerLoaded) {
+            final videos = state.videos;
+            final trailer =
+                videos.firstWhereOrNull(
+                  (v) => v.site == 'YouTube' && v.type == 'Trailer',
+                ) ??
+                videos.firstWhereOrNull((v) => v.site == 'YouTube');
 
-          bool isLandscape =
-              MediaQuery.of(context).orientation == Orientation.landscape;
-
-          return Scaffold(
-            extendBodyBehindAppBar: true,
-            appBar: AppBar(
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-              title: const Text('Watch', style: TextStyle(color: Colors.white)),
-              centerTitle: false,
-            ),
-            body: isLandscape
-                ? _buildLandscapeLayout(context, movie)
-                : _buildPortraitLayout(context, movie),
-          );
+            if (trailer != null && trailer.key.isNotEmpty) {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => VideoPlayerScreen(videoId: trailer.key),
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('No trailer available')),
+              );
+            }
+          } else if (state is MovieDetailError) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.message)));
+          }
         },
+        child: BlocBuilder<MovieDetailBloc, MovieDetailState>(
+          builder: (context, state) {
+            final movie = state is MovieDetailLoaded
+                ? state.movie
+                : widget.movie;
+
+            bool isLandscape =
+                MediaQuery.of(context).orientation == Orientation.landscape;
+
+            return Scaffold(
+              extendBodyBehindAppBar: true,
+              appBar: AppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+                title: const Text(
+                  'Watch',
+                  style: TextStyle(color: Colors.white),
+                ),
+                centerTitle: false,
+              ),
+              body: isLandscape
+                  ? _buildLandscapeLayout(context, movie)
+                  : _buildPortraitLayout(context, movie),
+            );
+          },
+        ),
       ),
     );
   }
@@ -171,7 +206,11 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                     width: 243,
                     height: 50,
                     child: OutlinedButton.icon(
-                      onPressed: () {},
+                      onPressed: () {
+                        context.read<MovieDetailBloc>().add(
+                          WatchTrailer(movie.id),
+                        );
+                      },
                       icon: const Icon(Icons.play_arrow, color: Colors.white),
                       label: const Text(
                         'Watch Trailer',
@@ -233,7 +272,11 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                     child: SizedBox(
                       height: 50,
                       child: OutlinedButton.icon(
-                        onPressed: () {},
+                        onPressed: () {
+                          context.read<MovieDetailBloc>().add(
+                            WatchTrailer(movie.id),
+                          );
+                        },
                         icon: const Icon(Icons.play_arrow, color: Colors.white),
                         label: const Text(
                           'Watch Trailer',

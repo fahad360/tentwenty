@@ -45,6 +45,7 @@ dependencies:
   dartz: ^0.10.1
   json_annotation: ^4.9.0
   collection: ^1.19.1
+  youtube_player_flutter: ^9.0.1
 
 dev_dependencies:
   flutter_test:

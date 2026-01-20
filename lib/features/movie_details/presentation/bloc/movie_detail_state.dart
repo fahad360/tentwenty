@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import '../../../watch/domain/entities/movie_entity.dart';
+import '../../../watch/domain/entities/video_entity.dart';
 
 abstract class MovieDetailState extends Equatable {
   const MovieDetailState();
@@ -26,4 +27,12 @@ class MovieDetailError extends MovieDetailState {
 
   @override
   List<Object> get props => [message];
+}
+
+class MovieTrailerLoaded extends MovieDetailState {
+  final List<VideoEntity> videos;
+  const MovieTrailerLoaded(this.videos);
+
+  @override
+  List<Object> get props => [videos];
 }

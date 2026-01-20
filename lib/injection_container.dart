@@ -12,6 +12,7 @@ import 'features/booking/domain/repositories/booking_repository.dart';
 import 'features/booking/domain/usecases/get_movie_showtimes_usecase.dart';
 import 'features/booking/presentation/bloc/booking_bloc.dart';
 import 'features/movie_details/domain/usecases/get_movie_details_usecase.dart';
+import 'features/movie_details/domain/usecases/get_movie_trailers_usecase.dart';
 import 'features/movie_details/presentation/bloc/movie_detail_bloc.dart';
 
 final sl = GetIt.instance;
@@ -55,8 +56,14 @@ Future<void> initDependencies() async {
 
   // Features - Movie Details
   // Bloc
-  sl.registerFactory(() => MovieDetailBloc(getMovieDetailsUseCase: sl()));
+  sl.registerFactory(
+    () => MovieDetailBloc(
+      getMovieDetailsUseCase: sl(),
+      getMovieTrailersUseCase: sl(),
+    ),
+  );
 
   // UseCases
   sl.registerLazySingleton(() => GetMovieDetailsUseCase(sl()));
+  sl.registerLazySingleton(() => GetMovieTrailersUseCase(sl()));
 }

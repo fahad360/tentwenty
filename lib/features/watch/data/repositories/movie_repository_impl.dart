@@ -3,6 +3,7 @@ import '../../../../core/errors/error_model.dart';
 import '../../domain/entities/movie_entity.dart';
 import '../../domain/repositories/movie_repository.dart';
 import '../datasources/movie_service.dart';
+import '../../domain/entities/video_entity.dart';
 
 class MovieRepositoryImpl implements MovieRepository {
   final MovieService _movieService;
@@ -34,6 +35,16 @@ class MovieRepositoryImpl implements MovieRepository {
     try {
       final movieModel = await _movieService.getMovieDetails(id);
       return Right(movieModel);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<VideoEntity>>> getMovieTrailers(int id) async {
+    try {
+      final response = await _movieService.getMovieVideos(id);
+      return Right(response.results);
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }
