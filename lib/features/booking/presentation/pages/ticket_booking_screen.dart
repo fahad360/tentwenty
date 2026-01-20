@@ -86,65 +86,71 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
                   .expand((t) => t.showtimes)
                   .toList();
 
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  DateSelector(
-                    dates: _dates,
-                    selectedIndex: state.selectedDateIndex,
-                  ),
-                  const SizedBox(height: 30),
-                  Expanded(
-                    child: ListView.separated(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      scrollDirection: Axis.horizontal,
-                      itemCount: allShowtimes.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(width: 10),
-                      itemBuilder: (context, index) {
-                        return ShowtimeCard(
-                          index: index,
-                          showtime: allShowtimes[index],
-                          isSelected: state.selectedShowtimeIndex == index,
-                        );
-                      },
+              return SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    DateSelector(
+                      dates: _dates,
+                      selectedIndex: state.selectedDateIndex,
                     ),
-                  ),
-                  const Spacer(), // Push button to bottom
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: PrimaryButton(
-                      text: 'Select Seats',
-                      onPressed: state.selectedShowtimeIndex != null
-                          ? () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) {
-                                    final selectedEntity =
-                                        allShowtimes[state
-                                            .selectedShowtimeIndex!];
-                                    return BlocProvider.value(
-                                      value: context.read<BookingBloc>(),
-                                      child: SeatSelectionScreen(
-                                        movie: widget.movie,
-                                        date: _dates[state.selectedDateIndex],
-                                        showtime: legacy.Showtime(
-                                          time: selectedEntity.time,
-                                          hallName: selectedEntity.hall,
-                                          price: selectedEntity.price,
-                                          bonus: selectedEntity.bonusPoints,
+                    const SizedBox(height: 30),
+                    SizedBox(
+                      height: 320,
+                      child: ListView.separated(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        scrollDirection: Axis.horizontal,
+                        itemCount: allShowtimes.length,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(width: 10),
+                        itemBuilder: (context, index) {
+                          return ShowtimeCard(
+                            index: index,
+                            showtime: allShowtimes[index],
+                            isSelected: state.selectedShowtimeIndex == index,
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: PrimaryButton(
+                        text: 'Select Seats',
+                        onPressed: state.selectedShowtimeIndex != null
+                            ? () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) {
+                                      final selectedEntity =
+                                          allShowtimes[state
+                                              .selectedShowtimeIndex!];
+                                      return BlocProvider.value(
+                                        value: context.read<BookingBloc>(),
+                                        child: SeatSelectionScreen(
+                                          movie: widget.movie,
+                                          date: _dates[state.selectedDateIndex],
+                                          showtime: legacy.Showtime(
+                                            time: selectedEntity.time,
+                                            hallName: selectedEntity.hall,
+                                            price: selectedEntity.price,
+                                            bonus: selectedEntity.bonusPoints,
+                                          ),
                                         ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              );
-                            }
-                          : null,
+                                      );
+                                    },
+                                  ),
+                                );
+                              }
+                            : null,
+                      ),
                     ),
-                  ),
-                ],
+                    SizedBox(
+                      height: MediaQuery.of(context).padding.bottom + 20,
+                    ),
+                  ],
+                ),
               );
             }
             return const SizedBox.shrink();

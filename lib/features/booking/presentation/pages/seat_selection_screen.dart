@@ -92,126 +92,128 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
             }
           }
 
-          return Column(
-            children: [
-              // Seat Map
-              Expanded(
-                child: InteractiveViewer(
-                  transformationController: _transformationController,
-                  panEnabled: true,
-                  scaleEnabled: true,
-                  minScale: 0.5,
-                  maxScale: 3.0,
-                  constrained: false,
-                  boundaryMargin: const EdgeInsets.all(100),
-                  child: Padding(
-                    padding: const EdgeInsets.all(40.0),
-                    child: Column(
-                      children: [
-                        const CinemaScreenWidget(),
-                        const SizedBox(height: 30),
+          return SafeArea(
+            child: Column(
+              children: [
+                // Seat Map
+                Expanded(
+                  child: InteractiveViewer(
+                    transformationController: _transformationController,
+                    panEnabled: true,
+                    scaleEnabled: true,
+                    minScale: 0.5,
+                    maxScale: 3.0,
+                    constrained: false,
+                    boundaryMargin: const EdgeInsets.all(100),
+                    child: Padding(
+                      padding: const EdgeInsets.all(40.0),
+                      child: Column(
+                        children: [
+                          const CinemaScreenWidget(),
+                          const SizedBox(height: 30),
 
-                        // Seats
-                        ...List.generate(state.seats.length, (i) {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 10),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // Row number
-                                SizedBox(
-                                  width: 20,
-                                  child: Text(
-                                    '${i + 1}',
+                          // Seats
+                          ...List.generate(state.seats.length, (i) {
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  // Row number
+                                  SizedBox(
+                                    width: 20,
+                                    child: Text(
+                                      '${i + 1}',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.darkBlue,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 20),
+                                  ...List.generate(state.seats[i].length, (j) {
+                                    // Add aisle gap
+                                    if (j == 6 || j == 18) {
+                                      return const SizedBox(width: 30);
+                                    }
+                                    return SeatWidget(seat: state.seats[i][j]);
+                                  }),
+                                ],
+                              ),
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Controls to Zoom
+                ZoomControls(controller: _transformationController),
+
+                // Legend and Footer
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: const BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SeatLegend(),
+                      const SizedBox(height: 20),
+
+                      // Seat chips (Mock selection)
+                      if (selectedCount > 0)
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.black.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    '$selectedCount / ',
                                     style: const TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.darkBlue,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                ),
-                                const SizedBox(width: 20),
-                                ...List.generate(state.seats[i].length, (j) {
-                                  // Add aisle gap
-                                  if (j == 6 || j == 18) {
-                                    return const SizedBox(width: 30);
-                                  }
-                                  return SeatWidget(seat: state.seats[i][j]);
-                                }),
-                              ],
-                            ),
-                          );
-                        }),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              // Controls to Zoom
-              ZoomControls(controller: _transformationController),
-
-              // Legend and Footer
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: const BoxDecoration(
-                  color: AppColors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
-                  ),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const SeatLegend(),
-                    const SizedBox(height: 20),
-
-                    // Seat chips (Mock selection)
-                    if (selectedCount > 0)
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppColors.black.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Row(
-                              children: [
-                                Text(
-                                  '$selectedCount / ',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
+                                  const Text(
+                                    'tickets',
+                                    style: TextStyle(fontSize: 10),
                                   ),
-                                ),
-                                const Text(
-                                  'tickets',
-                                  style: TextStyle(fontSize: 10),
-                                ),
-                                const SizedBox(width: 5),
-                                const Icon(Icons.close, size: 14),
-                              ],
+                                  const SizedBox(width: 5),
+                                  const Icon(Icons.close, size: 14),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    const SizedBox(height: 20),
+                          ],
+                        ),
+                      const SizedBox(height: 20),
 
-                    // Total and Pay
-                    BookingPriceFooter(
-                      totalPrice: state.totalPrice.toInt(),
-                      onProceed: () {
-                        // TODO: Implement proceed logic
-                      },
-                    ),
-                  ],
+                      // Total and Pay
+                      BookingPriceFooter(
+                        totalPrice: state.totalPrice.toInt(),
+                        onProceed: () {
+                          // TODO: Implement proceed logic
+                        },
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         },
       ),
