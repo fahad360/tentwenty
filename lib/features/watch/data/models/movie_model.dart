@@ -11,6 +11,8 @@ class MovieModel extends MovieEntity {
   final String? backdropPath;
   @JsonKey(name: 'genre_ids')
   final List<int>? genreIds;
+  @JsonKey(name: 'genres')
+  final List<Map<String, dynamic>>? genresList;
   @JsonKey(name: 'release_date')
   final String? releaseDateRaw;
 
@@ -43,23 +45,27 @@ class MovieModel extends MovieEntity {
     this.posterPath,
     this.backdropPath,
     this.genreIds,
+    this.genresList,
     String? overview,
     this.releaseDateRaw,
   }) : super(
          imageUrl: posterPath != null
              ? 'https://image.tmdb.org/t/p/w500$posterPath'
-             : '', 
-         category: genreIds != null && genreIds.isNotEmpty
-             ? _genreMap[genreIds.first] ?? 'Unknown'
-             : 'Unknown',
+             : '',
+         category: (genresList != null && genresList.isNotEmpty)
+             ? genresList.first['name'] as String
+             : (genreIds != null && genreIds.isNotEmpty
+                   ? _genreMap[genreIds.first] ?? 'Unknown'
+                   : 'Unknown'),
          overview: overview ?? '',
          releaseDate: releaseDateRaw ?? '',
-         genres:
-             genreIds
-                 ?.map((id) => _genreMap[id] ?? '')
-                 .where((name) => name.isNotEmpty)
-                 .toList() ??
-             const [],
+         genres: (genresList != null && genresList.isNotEmpty)
+             ? genresList.map((g) => g['name'] as String).toList()
+             : (genreIds
+                       ?.map((id) => _genreMap[id] ?? '')
+                       .where((name) => name.isNotEmpty)
+                       .toList() ??
+                   const []),
          trailerUrl: '', // Not provided by this endpoint directly
        );
 

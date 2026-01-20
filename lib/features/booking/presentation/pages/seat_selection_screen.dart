@@ -193,8 +193,9 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                             const SizedBox(width: 20),
                             ...List.generate(_cols, (j) {
                               // Add aisle gap
-                              if (j == 6 || j == 18)
+                              if (j == 6 || j == 18) {
                                 return const SizedBox(width: 30);
+                              }
                               return _buildSeatItem(i, j);
                             }),
                           ],
@@ -218,7 +219,7 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 4,
                     ),
                   ],

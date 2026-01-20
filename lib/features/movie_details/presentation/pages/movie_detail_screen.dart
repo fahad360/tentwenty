@@ -3,57 +3,81 @@ import 'package:flutter/material.dart';
 import '../../../../features/watch/domain/entities/movie_entity.dart';
 import '../../../../features/booking/presentation/pages/ticket_booking_screen.dart';
 
-class MovieDetailScreen extends StatelessWidget {
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../injection_container.dart';
+import '../bloc/movie_detail_bloc.dart';
+import '../bloc/movie_detail_event.dart';
+import '../bloc/movie_detail_state.dart';
+
+class MovieDetailScreen extends StatefulWidget {
   final MovieEntity movie;
 
   const MovieDetailScreen({super.key, required this.movie});
 
   @override
-  Widget build(BuildContext context) {
-    bool isLandscape =
-        MediaQuery.of(context).orientation == Orientation.landscape;
+  State<MovieDetailScreen> createState() => _MovieDetailScreenState();
+}
 
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: const Text('Watch', style: TextStyle(color: Colors.white)),
-        centerTitle: false,
+class _MovieDetailScreenState extends State<MovieDetailScreen> {
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) =>
+          sl<MovieDetailBloc>()..add(GetMovieDetails(widget.movie.id)),
+      child: BlocBuilder<MovieDetailBloc, MovieDetailState>(
+        builder: (context, state) {
+          final movie = state is MovieDetailLoaded ? state.movie : widget.movie;
+
+          bool isLandscape =
+              MediaQuery.of(context).orientation == Orientation.landscape;
+
+          return Scaffold(
+            extendBodyBehindAppBar: true,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+              title: const Text('Watch', style: TextStyle(color: Colors.white)),
+              centerTitle: false,
+            ),
+            body: isLandscape
+                ? _buildLandscapeLayout(context, movie)
+                : _buildPortraitLayout(context, movie),
+          );
+        },
       ),
-      body: isLandscape
-          ? _buildLandscapeLayout(context)
-          : _buildPortraitLayout(context),
     );
   }
 
-  Widget _buildPortraitLayout(BuildContext context) {
+  Widget _buildPortraitLayout(BuildContext context, MovieEntity movie) {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeroHeader(context, isPortrait: true),
-          _buildContent(context),
+          _buildHeroHeader(context, movie, isPortrait: true),
+          _buildContent(context, movie),
         ],
       ),
     );
   }
 
-  Widget _buildLandscapeLayout(BuildContext context) {
+  Widget _buildLandscapeLayout(BuildContext context, MovieEntity movie) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Expanded(flex: 1, child: _buildHeroHeader(context, isPortrait: false)),
+        Expanded(
+          flex: 1,
+          child: _buildHeroHeader(context, movie, isPortrait: false),
+        ),
         Expanded(
           flex: 1,
           child: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 100, 20, 20),
-              child: _buildContent(context),
+              child: _buildContent(context, movie),
             ),
           ),
         ),
@@ -61,7 +85,11 @@ class MovieDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeroHeader(BuildContext context, {required bool isPortrait}) {
+  Widget _buildHeroHeader(
+    BuildContext context,
+    MovieEntity movie, {
+    required bool isPortrait,
+  }) {
     return Container(
       height: isPortrait ? 500 : double.infinity,
       width: double.infinity,
@@ -236,7 +264,7 @@ class MovieDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildContent(BuildContext context) {
+  Widget _buildContent(BuildContext context, MovieEntity movie) {
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: Column(

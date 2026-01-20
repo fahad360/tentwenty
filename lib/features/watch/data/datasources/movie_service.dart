@@ -14,4 +14,7 @@ abstract class MovieService {
 
   @GET('search/movie')
   Future<MovieResponse> searchMovies(@Query('query') String query);
+
+  @GET('movie/{id}')
+  Future<MovieModel> getMovieDetails(@Path('id') int id);
 }

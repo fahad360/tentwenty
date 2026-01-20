@@ -28,4 +28,14 @@ class MovieRepositoryImpl implements MovieRepository {
       return Left(ServerFailure(e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, MovieEntity>> getMovieDetails(int id) async {
+    try {
+      final movieModel = await _movieService.getMovieDetails(id);
+      return Right(movieModel);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
 }
