@@ -11,7 +11,7 @@ class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
-      scaffoldBackgroundColor: const Color(0xFFF2F2F6), // Light grey background
+      scaffoldBackgroundColor: const Color(0xFFFFFFFF),
       primaryColor: primaryColor,
       colorScheme: ColorScheme.fromSeed(
         seedColor: primaryColor,
@@ -19,6 +19,7 @@ class AppTheme {
       ),
       textTheme: GoogleFonts.poppinsTextTheme(),
       appBarTheme: const AppBarTheme(
+        surfaceTintColor: Colors.white,
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.black),

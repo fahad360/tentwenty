@@ -14,6 +14,8 @@ import 'features/booking/presentation/bloc/booking_bloc.dart';
 import 'features/movie_details/domain/usecases/get_movie_details_usecase.dart';
 import 'features/movie_details/domain/usecases/get_movie_trailers_usecase.dart';
 import 'features/movie_details/presentation/bloc/movie_detail_bloc.dart';
+import 'features/media_library/domain/usecases/favorites_usecases.dart';
+import 'features/media_library/presentation/bloc/favorites_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -60,10 +62,22 @@ Future<void> initDependencies() async {
     () => MovieDetailBloc(
       getMovieDetailsUseCase: sl(),
       getMovieTrailersUseCase: sl(),
+      saveMovieUseCase: sl(),
+      removeMovieUseCase: sl(),
+      isMovieFavoriteUseCase: sl(),
     ),
   );
 
   // UseCases
   sl.registerLazySingleton(() => GetMovieDetailsUseCase(sl()));
   sl.registerLazySingleton(() => GetMovieTrailersUseCase(sl()));
+
+  // Features - Media Library / Favorites
+  sl.registerFactory(
+    () => FavoritesBloc(getFavoritesUseCase: sl(), repository: sl(), removeMovieUseCase: sl()),
+  );
+  sl.registerLazySingleton(() => SaveMovieUseCase(sl()));
+  sl.registerLazySingleton(() => RemoveMovieUseCase(sl()));
+  sl.registerLazySingleton(() => GetFavoritesUseCase(sl()));
+  sl.registerLazySingleton(() => IsMovieFavoriteUseCase(sl()));
 }

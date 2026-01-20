@@ -7,11 +7,11 @@ part of 'video_model.dart';
 // **************************************************************************
 
 VideoModel _$VideoModelFromJson(Map<String, dynamic> json) => VideoModel(
-  key: json['key'] as String,
-  name: json['name'] as String,
-  site: json['site'] as String,
-  type: json['type'] as String,
-);
+      key: json['key'] as String,
+      name: json['name'] as String,
+      site: json['site'] as String,
+      type: json['type'] as String,
+    );
 
 Map<String, dynamic> _$VideoModelToJson(VideoModel instance) =>
     <String, dynamic>{
@@ -29,4 +29,6 @@ VideoResponse _$VideoResponseFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$VideoResponseToJson(VideoResponse instance) =>
-    <String, dynamic>{'results': instance.results};
+    <String, dynamic>{
+      'results': instance.results,
+    };

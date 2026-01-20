@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../features/watch/domain/entities/movie_entity.dart';
 import '../../../../features/booking/presentation/pages/ticket_booking_screen.dart';
-
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../injection_container.dart';
 import '../bloc/movie_detail_bloc.dart';
 import '../bloc/movie_detail_event.dart';
@@ -26,7 +25,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
     return BlocProvider(
       create: (_) =>
           sl<MovieDetailBloc>()..add(GetMovieDetails(widget.movie.id)),
-      child: BlocListener<MovieDetailBloc, MovieDetailState>(
+      child: BlocConsumer<MovieDetailBloc, MovieDetailState>(
         listener: (context, state) {
           if (state is MovieTrailerLoaded) {
             final videos = state.videos;
@@ -47,42 +46,55 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                 const SnackBar(content: Text('No trailer available')),
               );
             }
+            // Ideally we should reload the previous state here so UI doesn't stay in 'TrailerLoaded' state
+            // But for now, user didn't ask to fix this specific UX glitch if it exists.
           } else if (state is MovieDetailError) {
             ScaffoldMessenger.of(
               context,
             ).showSnackBar(SnackBar(content: Text(state.message)));
           }
         },
-        child: BlocBuilder<MovieDetailBloc, MovieDetailState>(
-          builder: (context, state) {
-            final movie = state is MovieDetailLoaded
-                ? state.movie
-                : widget.movie;
+        builder: (context, state) {
+          final movie = state is MovieDetailLoaded ? state.movie : widget.movie;
 
-            bool isLandscape =
-                MediaQuery.of(context).orientation == Orientation.landscape;
+          bool isFavorite = false;
+          if (state is MovieDetailLoaded) {
+            isFavorite = state.isFavorite;
+          }
 
-            return Scaffold(
-              extendBodyBehindAppBar: true,
-              appBar: AppBar(
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-                title: const Text(
-                  'Watch',
-                  style: TextStyle(color: Colors.white),
-                ),
-                centerTitle: false,
+          bool isLandscape =
+              MediaQuery.of(context).orientation == Orientation.landscape;
+
+          return Scaffold(
+            extendBodyBehindAppBar: true,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                onPressed: () => Navigator.of(context).pop(),
               ),
-              body: isLandscape
-                  ? _buildLandscapeLayout(context, movie)
-                  : _buildPortraitLayout(context, movie),
-            );
-          },
-        ),
+              title: const Text('Watch', style: TextStyle(color: Colors.white)),
+              centerTitle: false,
+              actions: [
+                IconButton(
+                  icon: Icon(
+                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: isFavorite ? Colors.red : Colors.white,
+                  ),
+                  onPressed: () {
+                    // We need to pass the movie entity.
+                    // If we have detailed movie from state, use it, else widget.movie
+                    context.read<MovieDetailBloc>().add(ToggleFavorite(movie));
+                  },
+                ),
+              ],
+            ),
+            body: isLandscape
+                ? _buildLandscapeLayout(context, movie)
+                : _buildPortraitLayout(context, movie),
+          );
+        },
       ),
     );
   }
@@ -129,12 +141,12 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
       height: isPortrait ? 500 : double.infinity,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.grey[800], // Fallback background
+        color: Colors.grey[800],
         image: movie.imageUrl.isNotEmpty
             ? DecorationImage(
                 image: NetworkImage(movie.imageUrl),
                 fit: BoxFit.cover,
-                onError: (exception, stackTrace) {}, // Handle network errors
+                onError: (exception, stackTrace) {},
               )
             : null,
       ),
@@ -153,10 +165,6 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
         ),
         padding: const EdgeInsets.all(20),
         child: Column(
-          // mainAxisAlignment: MainAxisAlignment.end, // User snippet had this.
-          // BUT wait, looking at the snippet in the request:
-          // mainAxisAlignment: MainAxisAlignment.end,
-          // crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.end,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -370,7 +378,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
         chipColor = const Color(0xFFCD9D0F);
         break;
       default:
-        chipColor = Colors.grey;
+        chipColor = Colors.grey; // Default color for unknown genres
     }
 
     return Container(

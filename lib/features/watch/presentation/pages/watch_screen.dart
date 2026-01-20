@@ -224,10 +224,11 @@ class _WatchScreenState extends State<WatchScreen> {
         ),
         Expanded(
           child: Container(
-            color: const Color(0xFFF2F2F6),
+            color: const Color(0xFFFFFFFF),
             child: showTopResults
                 ? _buildTopResultsList(state, results)
                 : _buildGenreGrid(),
+                
           ),
         ),
       ],

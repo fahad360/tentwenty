@@ -15,10 +15,19 @@ class MovieDetailLoading extends MovieDetailState {}
 
 class MovieDetailLoaded extends MovieDetailState {
   final MovieEntity movie;
-  const MovieDetailLoaded(this.movie);
+  final bool isFavorite;
+
+  const MovieDetailLoaded(this.movie, {this.isFavorite = false});
 
   @override
-  List<Object> get props => [movie];
+  List<Object> get props => [movie, isFavorite];
+
+  MovieDetailLoaded copyWith({MovieEntity? movie, bool? isFavorite}) {
+    return MovieDetailLoaded(
+      movie ?? this.movie,
+      isFavorite: isFavorite ?? this.isFavorite,
+    );
+  }
 }
 
 class MovieDetailError extends MovieDetailState {

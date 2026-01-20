@@ -7,12 +7,12 @@ part of 'theater_model.dart';
 // **************************************************************************
 
 TheaterModel _$TheaterModelFromJson(Map<String, dynamic> json) => TheaterModel(
-  name: json['name'] as String,
-  location: json['location'] as String,
-  showtimesModel: (json['showtimesModel'] as List<dynamic>)
-      .map((e) => ShowtimeModel.fromJson(e as Map<String, dynamic>))
-      .toList(),
-);
+      name: json['name'] as String,
+      location: json['location'] as String,
+      showtimesModel: (json['showtimesModel'] as List<dynamic>)
+          .map((e) => ShowtimeModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
 
 Map<String, dynamic> _$TheaterModelToJson(TheaterModel instance) =>
     <String, dynamic>{

@@ -8,4 +8,9 @@ abstract class MovieRepository {
   Future<Either<Failure, List<MovieEntity>>> searchMovies(String query);
   Future<Either<Failure, MovieEntity>> getMovieDetails(int id);
   Future<Either<Failure, List<VideoEntity>>> getMovieTrailers(int id);
+  Future<Either<Failure, void>> saveMovieInFavorites(MovieEntity movie);
+  Future<Either<Failure, void>> removeMovieFromFavorites(int id);
+  Future<bool> isMovieFavorite(int id);
+  Future<Either<Failure, List<MovieEntity>>> getFavoriteMovies();
+  Stream<void> get onFavoritesChanged;
 }

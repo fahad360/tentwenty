@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:tentwenty/features/media_library/presentation/pages/media_library_screen.dart';
 import '../../../../features/watch/presentation/pages/watch_screen.dart';
 import '../cubit/bottom_nav_cubit.dart';
 
@@ -27,7 +28,7 @@ class _BottomNavViewState extends State<BottomNavView> {
   final List<Widget> _screens = const [
     Center(child: Text('Dashboard')),
     WatchScreen(),
-    Center(child: Text('Media Library')),
+    MediaLibraryScreen(),
     Center(child: Text('More')),
   ];
 
