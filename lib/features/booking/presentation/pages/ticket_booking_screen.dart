@@ -10,6 +10,7 @@ import '../bloc/booking_event.dart';
 import '../bloc/booking_state.dart';
 import 'seat_selection_screen.dart';
 import '../../../../core/widgets/skeleton_widgets.dart';
+import '../../../../core/theme/colors.dart';
 
 // Helper model to match the UI's expectation if differs from Entity, or we use Entity directly.
 // The Entity has: time, hall, price, bonusPoints.
@@ -45,12 +46,12 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
           sl<BookingBloc>()
             ..add(GetMovieShowtimes(widget.movie.id, "March 5, 2021")),
       child: Scaffold(
-        backgroundColor: const Color(0xFFF2F2F6),
+        backgroundColor: AppColors.background,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: AppColors.white,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+            icon: const Icon(Icons.arrow_back_ios, color: AppColors.black),
             onPressed: () => Navigator.of(context).pop(),
           ),
           title: Column(
@@ -67,7 +68,7 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
               Text(
                 'In Theaters ${widget.movie.releaseDate}',
                 style: const TextStyle(
-                  color: Color(0xFF61C3F2),
+                  color: AppColors.lightBlue,
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                 ),
@@ -98,7 +99,7 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFF202C43),
+                        color: AppColors.darkBlue,
                       ),
                     ),
                   ),
@@ -123,15 +124,17 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
                             ),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? const Color(0xFF61C3F2)
-                                  : const Color(0x1A000000),
+                                  ? AppColors.lightBlue
+                                  : AppColors.black.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             alignment: Alignment.center,
                             child: Text(
                               _dates[index],
                               style: TextStyle(
-                                color: isSelected ? Colors.white : Colors.black,
+                                color: isSelected
+                                    ? AppColors.white
+                                    : AppColors.black,
                                 fontWeight: FontWeight.w600,
                                 fontSize: 14,
                               ),
@@ -194,7 +197,7 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
                               }
                             : null,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF61C3F2),
+                          backgroundColor: AppColors.lightBlue,
                           disabledBackgroundColor: Colors.grey.shade300,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -205,7 +208,7 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: AppColors.white,
                           ),
                         ),
                       ),
@@ -244,7 +247,7 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
                   TextSpan(
                     text: showtime.time,
                     style: const TextStyle(
-                      color: Color(0xFF202C43),
+                      color: AppColors.darkBlue,
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                     ),
@@ -253,7 +256,7 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
                   TextSpan(
                     text: showtime.hall,
                     style: const TextStyle(
-                      color: Color(0xFF8F8F8F),
+                      color: AppColors.greyLabel,
                       fontSize: 12,
                     ),
                   ),
@@ -266,13 +269,11 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
               height: 200,
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: isSelected
-                      ? const Color(0xFF61C3F2)
-                      : const Color(0xFFEFEFEF),
+                  color: isSelected ? AppColors.lightBlue : AppColors.inputFill,
                   width: isSelected ? 1 : 1,
                 ),
                 borderRadius: BorderRadius.circular(10),
-                color: Colors.white,
+                color: AppColors.white,
               ),
               padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 40),
               child: CustomPaint(painter: MiniSeatMapPainter()),
@@ -280,7 +281,10 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
             const SizedBox(height: 10),
             RichText(
               text: TextSpan(
-                style: const TextStyle(fontSize: 12, color: Color(0xFF8F8F8F)),
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: AppColors.greyLabel,
+                ),
                 children: [
                   const TextSpan(text: 'From '),
                   TextSpan(
@@ -312,7 +316,7 @@ class MiniSeatMapPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF61C3F2)
+      ..color = AppColors.lightBlue
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
 
@@ -346,10 +350,10 @@ class MiniSeatMapPainter extends CustomPainter {
         Color color;
         if (i > 6) {
           color = (j % 5 == 0 || j % 3 == 0)
-              ? const Color(0xFFE26CA5)
-              : const Color(0xFF564CA3);
+              ? AppColors.pink
+              : AppColors.seatVip;
         } else {
-          color = const Color(0xFF61C3F2);
+          color = AppColors.lightBlue;
         }
         if ((i + j) % 7 == 0 || (i * j) % 5 == 0) {
           color = color.withValues(alpha: 0.2); // Random-ish using withValues

@@ -1,38 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'colors.dart';
 
 class AppTheme {
-  static const Color primaryColor = Color(0xFF2E2739);
-  static const Color accentColor = Color(0xFF61C3F2);
-  static const Color greyColor = Color(0xFF827D88);
-  static const Color whiteColor = Colors.white;
-  static const Color navigationBarColor = Color(0xFF2E2739);
-
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
-      scaffoldBackgroundColor: const Color(0xFFFFFFFF),
-      primaryColor: primaryColor,
+      scaffoldBackgroundColor: AppColors.white,
+      primaryColor: AppColors.darkPurple,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryColor,
-        background: const Color(0xFFF2F2F6),
+        seedColor: AppColors.darkPurple,
+        surface: AppColors.background, // Updated naming for M3
       ),
       textTheme: GoogleFonts.poppinsTextTheme(),
       appBarTheme: const AppBarTheme(
-        surfaceTintColor: Colors.white,
-        backgroundColor: Colors.white,
+        surfaceTintColor: AppColors.white,
+        backgroundColor: AppColors.white,
         elevation: 0,
-        iconTheme: IconThemeData(color: Colors.black),
+        iconTheme: IconThemeData(color: AppColors.black),
         titleTextStyle: TextStyle(
-          color: Colors.black,
+          color: AppColors.black,
           fontSize: 20,
           fontWeight: FontWeight.w500,
         ),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: navigationBarColor,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: greyColor,
+        backgroundColor: AppColors.darkPurple,
+        selectedItemColor: AppColors.white,
+        unselectedItemColor: AppColors.greyText,
         type: BottomNavigationBarType.fixed,
         showUnselectedLabels: true,
         selectedLabelStyle: TextStyle(

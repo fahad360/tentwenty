@@ -11,6 +11,7 @@ import '../bloc/movie_detail_event.dart';
 import '../bloc/movie_detail_state.dart';
 import 'video_player_screen.dart';
 import '../../../../core/widgets/skeleton_widgets.dart';
+import '../../../../core/theme/colors.dart';
 
 class MovieDetailScreen extends StatefulWidget {
   final MovieEntity movie;
@@ -59,10 +60,13 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           if (state is MovieDetailLoading) {
             return Scaffold(
               appBar: AppBar(
-                backgroundColor: Colors.transparent,
+                backgroundColor: AppColors.transparent,
                 elevation: 0,
                 leading: IconButton(
-                  icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+                  icon: const Icon(
+                    Icons.arrow_back_ios,
+                    color: AppColors.black,
+                  ),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
               ),
@@ -82,19 +86,22 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           return Scaffold(
             extendBodyBehindAppBar: true,
             appBar: AppBar(
-              backgroundColor: Colors.transparent,
+              backgroundColor: AppColors.transparent,
               elevation: 0,
               leading: IconButton(
-                icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                icon: const Icon(Icons.arrow_back_ios, color: AppColors.white),
                 onPressed: () => Navigator.of(context).pop(),
               ),
-              title: const Text('Watch', style: TextStyle(color: Colors.white)),
+              title: const Text(
+                'Watch',
+                style: TextStyle(color: AppColors.white),
+              ),
               centerTitle: false,
               actions: [
                 IconButton(
                   icon: Icon(
                     isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: isFavorite ? Colors.red : Colors.white,
+                    color: isFavorite ? AppColors.red : AppColors.white,
                   ),
                   onPressed: () {
                     // We need to pass the movie entity.
@@ -118,8 +125,8 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
       onRefresh: () async {
         context.read<MovieDetailBloc>().add(GetMovieDetails(movie.id));
       },
-      color: const Color(0xFF61C3F2), // Accent Color
-      backgroundColor: Colors.white,
+      color: AppColors.lightBlue, // Accent Color
+      backgroundColor: AppColors.white,
       height: 60,
       showChildOpacityTransition: false,
       child: SingleChildScrollView(
@@ -149,8 +156,8 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
             onRefresh: () async {
               context.read<MovieDetailBloc>().add(GetMovieDetails(movie.id));
             },
-            color: const Color(0xFF61C3F2),
-            backgroundColor: Colors.white,
+            color: AppColors.lightBlue,
+            backgroundColor: AppColors.white,
             height: 60,
             showChildOpacityTransition: false,
             child: SingleChildScrollView(
@@ -175,7 +182,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
       height: isPortrait ? 500 : double.infinity,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.grey[800],
+        color: AppColors.darkerGrey,
         image: movie.imageUrl.isNotEmpty
             ? DecorationImage(
                 image: NetworkImage(movie.imageUrl),
@@ -190,9 +197,9 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.black.withValues(alpha: 0.3),
-              Colors.transparent,
-              Colors.black.withValues(alpha: 0.8),
+              AppColors.black.withValues(alpha: 0.3),
+              AppColors.transparent,
+              AppColors.black.withValues(alpha: 0.8),
             ],
             stops: const [0.0, 0.5, 1.0],
           ),
@@ -205,7 +212,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
             Text(
               'In Theaters ${movie.releaseDate}',
               style: const TextStyle(
-                color: Colors.white,
+                color: AppColors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
@@ -228,7 +235,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF61C3F2),
+                        backgroundColor: AppColors.lightBlue,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -238,7 +245,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: AppColors.white,
                         ),
                       ),
                     ),
@@ -253,18 +260,21 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                           WatchTrailer(movie.id),
                         );
                       },
-                      icon: const Icon(Icons.play_arrow, color: Colors.white),
+                      icon: const Icon(
+                        Icons.play_arrow,
+                        color: AppColors.white,
+                      ),
                       label: const Text(
                         'Watch Trailer',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: AppColors.white,
                         ),
                       ),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(
-                          color: Color(0xFF61C3F2),
+                          color: AppColors.lightBlue,
                           width: 1,
                         ),
                         shape: RoundedRectangleBorder(
@@ -293,7 +303,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF61C3F2),
+                          backgroundColor: AppColors.lightBlue,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -303,7 +313,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: AppColors.white,
                           ),
                         ),
                       ),
@@ -319,18 +329,21 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                             WatchTrailer(movie.id),
                           );
                         },
-                        icon: const Icon(Icons.play_arrow, color: Colors.white),
+                        icon: const Icon(
+                          Icons.play_arrow,
+                          color: AppColors.white,
+                        ),
                         label: const Text(
                           'Watch Trailer',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: AppColors.white,
                           ),
                         ),
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(
-                            color: Color(0xFF61C3F2),
+                            color: AppColors.lightBlue,
                             width: 1,
                           ),
                           shape: RoundedRectangleBorder(
@@ -360,7 +373,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF202C43),
+              color: AppColors.darkBlue,
             ),
           ),
           const SizedBox(height: 10),
@@ -372,14 +385,14 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                 .toList(),
           ),
           const SizedBox(height: 20),
-          const Divider(color: Color(0xFFDBDBDF)),
+          const Divider(color: AppColors.lightGrey),
           const SizedBox(height: 20),
           const Text(
             'Overview',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF202C43),
+              color: AppColors.darkBlue,
             ),
           ),
           const SizedBox(height: 10),
@@ -388,7 +401,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
             style: const TextStyle(
               fontSize: 12,
               height: 1.5,
-              color: Color(0xFF8F8F8F),
+              color: AppColors.greyLabel,
             ),
           ),
         ],
@@ -400,19 +413,19 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
     Color chipColor;
     switch (label) {
       case 'Action':
-        chipColor = const Color(0xFF15D2BC);
+        chipColor = AppColors.teal;
         break;
       case 'Thriller':
-        chipColor = const Color(0xFFE26CA5);
+        chipColor = AppColors.pink;
         break;
       case 'Science':
-        chipColor = const Color(0xFF564CA3);
+        chipColor = AppColors.seatVip; // purple
         break;
       case 'Fiction':
-        chipColor = const Color(0xFFCD9D0F);
+        chipColor = AppColors.seatSelected; // gold
         break;
       default:
-        chipColor = Colors.grey; // Default color for unknown genres
+        chipColor = AppColors.grey; // Default color for unknown genres
     }
 
     return Container(
@@ -424,7 +437,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
       child: Text(
         label,
         style: const TextStyle(
-          color: Colors.white,
+          color: AppColors.white,
           fontSize: 12,
           fontWeight: FontWeight.w600,
         ),

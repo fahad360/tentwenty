@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/movie_entity.dart';
+import '../../../../core/theme/colors.dart';
 
 class SearchResultTile extends StatelessWidget {
   final MovieEntity movie;
@@ -22,7 +23,7 @@ class SearchResultTile extends StatelessWidget {
               height: 100,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
-                color: Colors.grey[300], // Placeholder background
+                color: AppColors.shimmerBase, // Placeholder background
               ),
               clipBehavior: Clip.hardEdge,
               child: movie.imageUrl.isNotEmpty
@@ -31,11 +32,16 @@ class SearchResultTile extends StatelessWidget {
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return const Center(
-                          child: Icon(Icons.broken_image, color: Colors.grey),
+                          child: Icon(
+                            Icons.broken_image,
+                            color: AppColors.grey,
+                          ),
                         );
                       },
                     )
-                  : const Center(child: Icon(Icons.movie, color: Colors.grey)),
+                  : const Center(
+                      child: Icon(Icons.movie, color: AppColors.grey),
+                    ),
             ),
             const SizedBox(width: 20),
             // Title and Category
@@ -48,7 +54,7 @@ class SearchResultTile extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFF202C43),
+                      color: AppColors.darkBlue,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -57,7 +63,7 @@ class SearchResultTile extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFFB1B1B1),
+                      color: AppColors.mediumGrey,
                     ),
                   ),
                 ],
@@ -65,7 +71,7 @@ class SearchResultTile extends StatelessWidget {
             ),
             // Menu Icon
             IconButton(
-              icon: const Icon(Icons.more_horiz, color: Color(0xFF61C3F2)),
+              icon: const Icon(Icons.more_horiz, color: AppColors.lightBlue),
               onPressed: () {},
             ),
           ],

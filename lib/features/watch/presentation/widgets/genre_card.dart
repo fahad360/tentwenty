@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/models/genre.dart';
+import '../../../../core/theme/colors.dart';
 
 class GenreCard extends StatelessWidget {
   final Genre genre;
@@ -15,7 +16,7 @@ class GenreCard extends StatelessWidget {
           image: NetworkImage(genre.imageUrl),
           fit: BoxFit.cover,
           colorFilter: ColorFilter.mode(
-            Colors.black.withValues(alpha: 0.2),
+            AppColors.black.withValues(alpha: 0.2),
             BlendMode.darken,
           ),
         ),
@@ -26,7 +27,7 @@ class GenreCard extends StatelessWidget {
         child: Text(
           genre.title,
           style: const TextStyle(
-            color: Colors.white,
+            color: AppColors.white,
             fontSize: 16,
             fontWeight: FontWeight.w500,
           ),

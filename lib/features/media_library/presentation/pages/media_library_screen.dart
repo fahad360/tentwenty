@@ -5,6 +5,7 @@ import '../../../../injection_container.dart';
 import '../bloc/favorites_bloc.dart';
 import '../../../movie_details/presentation/pages/movie_detail_screen.dart';
 import '../../../../core/widgets/skeleton_widgets.dart';
+import '../../../../core/theme/colors.dart';
 
 class MediaLibraryScreen extends StatelessWidget {
   const MediaLibraryScreen({super.key});
@@ -17,11 +18,11 @@ class MediaLibraryScreen extends StatelessWidget {
         appBar: AppBar(
           title: const Text(
             'Media Library',
-            style: TextStyle(color: Colors.black),
+            style: TextStyle(color: AppColors.black),
           ),
-          backgroundColor: Colors.white,
+          backgroundColor: AppColors.white,
           elevation: 0,
-          leading: const BackButton(color: Colors.black),
+          leading: const BackButton(color: AppColors.black),
         ),
         body: BlocBuilder<FavoritesBloc, FavoritesState>(
           builder: (context, state) {
@@ -37,8 +38,8 @@ class MediaLibraryScreen extends StatelessWidget {
                 onRefresh: () async {
                   context.read<FavoritesBloc>().add(LoadFavorites());
                 },
-                color: const Color(0xFF61C3F2),
-                backgroundColor: Colors.white,
+                color: AppColors.lightBlue,
+                backgroundColor: AppColors.white,
                 height: 60,
                 showChildOpacityTransition: false,
                 child: ListView.builder(
@@ -52,11 +53,11 @@ class MediaLibraryScreen extends StatelessWidget {
                     return Container(
                       margin: const EdgeInsets.only(bottom: 20),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: AppColors.white,
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: AppColors.black.withValues(alpha: 0.05),
                             blurRadius: 20,
                             offset: const Offset(0, 4),
                           ),
@@ -118,7 +119,7 @@ class MediaLibraryScreen extends StatelessWidget {
                                           ? 'MOVIE'
                                           : movie.category.toUpperCase(),
                                       style: const TextStyle(
-                                        color: Color(0xFF61C3F2),
+                                        color: AppColors.lightBlue,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 10,
                                       ),
@@ -131,7 +132,7 @@ class MediaLibraryScreen extends StatelessWidget {
                                       style: const TextStyle(
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600,
-                                        color: Color(0xFF2E2739),
+                                        color: AppColors.darkPurple,
                                       ),
                                     ),
                                     const SizedBox(height: 4),
@@ -139,7 +140,7 @@ class MediaLibraryScreen extends StatelessWidget {
                                       movie.releaseDate,
                                       style: const TextStyle(
                                         fontSize: 12,
-                                        color: Color(0xFFDBDBDF),
+                                        color: AppColors.lightGrey,
                                       ),
                                     ),
                                   ],
@@ -149,7 +150,7 @@ class MediaLibraryScreen extends StatelessWidget {
                             IconButton(
                               icon: const Icon(
                                 Icons.favorite,
-                                color: Color(0xFF61C3F2),
+                                color: AppColors.lightBlue,
                               ),
                               onPressed: () {
                                 context.read<FavoritesBloc>().add(

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tentwenty/features/media_library/presentation/pages/media_library_screen.dart';
 import '../../../../features/watch/presentation/pages/watch_screen.dart';
+import '../../../../core/theme/colors.dart';
 import '../cubit/bottom_nav_cubit.dart';
 
 class BottomNavPage extends StatelessWidget {
@@ -45,7 +46,7 @@ class _BottomNavViewState extends State<BottomNavView> {
                 topLeft: Radius.circular(27),
                 topRight: Radius.circular(27),
               ),
-              color: Color(0xFF2E2739),
+              color: AppColors.darkPurple,
             ),
             child: ClipRRect(
               borderRadius: const BorderRadius.only(
@@ -57,10 +58,10 @@ class _BottomNavViewState extends State<BottomNavView> {
                 onTap: (index) {
                   context.read<BottomNavCubit>().changeIndex(index);
                 },
-                backgroundColor: const Color(0xFF2E2739),
+                backgroundColor: AppColors.darkPurple,
                 type: BottomNavigationBarType.fixed,
-                selectedItemColor: Colors.white,
-                unselectedItemColor: const Color(0xFF827D88),
+                selectedItemColor: AppColors.white,
+                unselectedItemColor: AppColors.greyText,
                 showUnselectedLabels: true,
                 elevation: 0,
                 items: [
@@ -87,7 +88,7 @@ class _BottomNavViewState extends State<BottomNavView> {
         child: SvgPicture.asset(
           assetName,
           colorFilter: const ColorFilter.mode(
-            Color(0xFF827D88),
+            AppColors.greyText,
             BlendMode.srcIn,
           ),
         ),
@@ -96,7 +97,7 @@ class _BottomNavViewState extends State<BottomNavView> {
         padding: const EdgeInsets.only(bottom: 5.0, top: 5.0),
         child: SvgPicture.asset(
           assetName,
-          colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+          colorFilter: const ColorFilter.mode(AppColors.white, BlendMode.srcIn),
         ),
       ),
       label: label,

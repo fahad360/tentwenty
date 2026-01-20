@@ -13,6 +13,7 @@ import '../widgets/genre_card.dart';
 import '../widgets/search_result_tile.dart';
 import '../../../movie_details/presentation/pages/movie_detail_screen.dart';
 import '../../../../core/widgets/skeleton_widgets.dart';
+import '../../../../core/theme/colors.dart';
 
 class WatchScreen extends StatefulWidget {
   const WatchScreen({super.key});
@@ -101,8 +102,8 @@ class _WatchScreenState extends State<WatchScreen> {
         onRefresh: () async {
           context.read<WatchBloc>().add(GetUpcomingMovies());
         },
-        color: const Color(0xFF61C3F2),
-        backgroundColor: Colors.white,
+        color: AppColors.lightBlue,
+        backgroundColor: AppColors.white,
         height: 60,
         showChildOpacityTransition: false,
         child: ListView.builder(
@@ -141,12 +142,15 @@ class _WatchScreenState extends State<WatchScreen> {
               },
               decoration: InputDecoration(
                 filled: true,
-                fillColor: const Color(0xFFEFEFEF),
+                fillColor: AppColors.inputFill,
                 hintText: 'TV shows, movies and more',
-                hintStyle: const TextStyle(color: Color(0xFF827D88)),
-                prefixIcon: const Icon(Icons.search, color: Color(0xFF2E2739)),
+                hintStyle: const TextStyle(color: AppColors.greyText),
+                prefixIcon: const Icon(
+                  Icons.search,
+                  color: AppColors.darkPurple,
+                ),
                 suffixIcon: IconButton(
-                  icon: const Icon(Icons.close, color: Color(0xFF2E2739)),
+                  icon: const Icon(Icons.close, color: AppColors.darkPurple),
                   onPressed: () {
                     context.read<WatchBloc>().add(ToggleSearch());
                   },
@@ -162,7 +166,7 @@ class _WatchScreenState extends State<WatchScreen> {
         ),
         Expanded(
           child: Container(
-            color: const Color(0xFFFFFFFF),
+            color: AppColors.white,
             child: showTopResults
                 ? _buildTopResultsList(state, results)
                 : _buildGenreGrid(),
@@ -251,7 +255,7 @@ class _WatchScreenState extends State<WatchScreen> {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: Color(0xFF202C43),
+              color: AppColors.darkBlue,
             ),
           ),
         ),
@@ -260,7 +264,7 @@ class _WatchScreenState extends State<WatchScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             itemCount: results.length,
             separatorBuilder: (context, index) =>
-                const Divider(color: Color(0xFFEFEFEF)),
+                const Divider(color: AppColors.inputFill),
             itemBuilder: (context, index) {
               return SearchResultTile(
                 movie: results[index],
@@ -288,7 +292,11 @@ class _WatchScreenState extends State<WatchScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios,
+            color: AppColors.black,
+            size: 20,
+          ),
           onPressed: () {
             // Cancel search submission via Bloc
             context.read<WatchBloc>().add(
@@ -302,7 +310,7 @@ class _WatchScreenState extends State<WatchScreen> {
         title: Text(
           '${results.length} Results Found',
           style: const TextStyle(
-            color: Colors.black,
+            color: AppColors.black,
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),

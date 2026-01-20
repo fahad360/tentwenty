@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/movie_entity.dart';
+import '../../../../core/theme/colors.dart';
 import '../../../movie_details/presentation/pages/movie_detail_screen.dart';
 
 class MovieCard extends StatelessWidget {
@@ -23,7 +24,7 @@ class MovieCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 20),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          color: const Color(0xFFDDDDDD),
+          color: AppColors.imagePlaceholder,
           image: movie.imageUrl.isNotEmpty
               ? DecorationImage(
                   image: NetworkImage(movie.imageUrl),
@@ -43,14 +44,17 @@ class MovieCard extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Colors.transparent, Colors.black.withValues(alpha: 0.7)],
+              colors: [
+                AppColors.transparent,
+                AppColors.black.withValues(alpha: 0.7),
+              ],
             ),
           ),
           width: double.infinity,
           child: Text(
             movie.title,
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.white,
               fontSize: 18,
               fontWeight: FontWeight.w500,
             ),
