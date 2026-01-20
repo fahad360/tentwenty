@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../booking/screens/ticket_booking_screen.dart';
-import 'models/movie.dart';
+
+import '../../../../features/watch/data/models/movie.dart';
+import '../../../../features/booking/presentation/pages/ticket_booking_screen.dart';
 
 class MovieDetailScreen extends StatelessWidget {
   final Movie movie;

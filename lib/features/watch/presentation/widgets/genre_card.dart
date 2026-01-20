@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/genre.dart';
+import '../../data/models/genre.dart';
 
 class GenreCard extends StatelessWidget {
   final Genre genre;

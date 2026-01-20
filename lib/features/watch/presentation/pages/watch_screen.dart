@@ -1,11 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-
-import 'models/genre.dart';
-import 'models/movie.dart';
-import 'widgets/genre_card.dart';
-import 'widgets/movie_card.dart';
-import 'widgets/search_result_tile.dart';
+import '../../data/models/movie.dart';
+import '../../data/models/genre.dart';
+import '../widgets/movie_card.dart';
+import '../widgets/genre_card.dart';
+import '../widgets/search_result_tile.dart';
 
 class WatchScreen extends StatefulWidget {
   const WatchScreen({super.key});

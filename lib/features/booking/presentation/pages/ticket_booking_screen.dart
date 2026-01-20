@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../watch/models/movie.dart';
-import '../models/cinema_data.dart';
+
+import '../../data/models/cinema_data.dart';
+import '../../../watch/data/models/movie.dart';
 import 'seat_selection_screen.dart';
 
 class TicketBookingScreen extends StatefulWidget {

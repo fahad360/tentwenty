@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'core/theme/app_theme.dart';
-import 'main_screen.dart';
+import 'features/bottom_nav/presentation/pages/bottom_nav_page.dart';
 
 void main() {
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+    ),
+  );
   runApp(const MyApp());
 }
 
@@ -12,10 +19,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'TenTwenty',
       debugShowCheckedModeBanner: false,
+      title: 'TenTwenty',
       theme: AppTheme.lightTheme,
-      home: const MainScreen(),
+      home: const BottomNavPage(),
     );
   }
 }

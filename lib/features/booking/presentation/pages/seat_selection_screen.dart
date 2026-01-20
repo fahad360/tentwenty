@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../../watch/models/movie.dart';
-import '../models/cinema_data.dart';
+import '../../../watch/data/models/movie.dart';
+import '../../data/models/cinema_data.dart';
 
 class SeatSelectionScreen extends StatefulWidget {
   final Movie movie;
