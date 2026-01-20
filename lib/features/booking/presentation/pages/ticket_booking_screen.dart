@@ -9,6 +9,7 @@ import '../bloc/booking_bloc.dart';
 import '../bloc/booking_event.dart';
 import '../bloc/booking_state.dart';
 import 'seat_selection_screen.dart';
+import '../../../../core/widgets/skeleton_widgets.dart';
 
 // Helper model to match the UI's expectation if differs from Entity, or we use Entity directly.
 // The Entity has: time, hall, price, bonusPoints.
@@ -80,7 +81,7 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
         body: BlocBuilder<BookingBloc, BookingState>(
           builder: (context, state) {
             if (state is BookingLoading) {
-              return const Center(child: CircularProgressIndicator());
+              return const SkeletonTicketBooking();
             } else if (state is BookingError) {
               return Center(child: Text(state.message));
             } else if (state is BookingLoaded) {

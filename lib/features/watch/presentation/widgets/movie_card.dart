@@ -23,7 +23,7 @@ class MovieCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 20),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          color: Colors.grey[800], // Background color fallback
+          color: const Color(0xFFDDDDDD),
           image: movie.imageUrl.isNotEmpty
               ? DecorationImage(
                   image: NetworkImage(movie.imageUrl),

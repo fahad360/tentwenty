@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import '../../../../injection_container.dart';
 import '../../domain/entities/movie_entity.dart';
 import '../../data/models/genre.dart';
@@ -11,6 +12,7 @@ import '../widgets/movie_card.dart';
 import '../widgets/genre_card.dart';
 import '../widgets/search_result_tile.dart';
 import '../../../movie_details/presentation/pages/movie_detail_screen.dart';
+import '../../../../core/widgets/skeleton_widgets.dart';
 
 class WatchScreen extends StatefulWidget {
   const WatchScreen({super.key});
@@ -137,7 +139,7 @@ class _WatchScreenState extends State<WatchScreen> {
                   if (state is WatchLoaded) {
                     return _buildResultsFoundView(context, state.movies);
                   } else if (state is WatchLoading) {
-                    return const Center(child: CircularProgressIndicator());
+                    return const SkeletonSearchResultList();
                   } else if (state is WatchError) {
                     return Center(child: Text(state.message));
                   }
@@ -158,14 +160,18 @@ class _WatchScreenState extends State<WatchScreen> {
 
   Widget _buildMovieListView(BuildContext context, WatchState state) {
     if (state is WatchLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const SkeletonHorizontalList();
     } else if (state is WatchError) {
       return Center(child: Text(state.message));
     } else if (state is WatchLoaded) {
-      return RefreshIndicator(
+      return LiquidPullToRefresh(
         onRefresh: () async {
           context.read<WatchBloc>().add(GetUpcomingMovies());
         },
+        color: const Color(0xFF61C3F2),
+        backgroundColor: Colors.white,
+        height: 60,
+        showChildOpacityTransition: false,
         child: ListView.builder(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(20),
@@ -228,7 +234,6 @@ class _WatchScreenState extends State<WatchScreen> {
             child: showTopResults
                 ? _buildTopResultsList(state, results)
                 : _buildGenreGrid(),
-                
           ),
         ),
       ],
@@ -253,7 +258,7 @@ class _WatchScreenState extends State<WatchScreen> {
 
   Widget _buildTopResultsList(WatchState state, List<MovieEntity> results) {
     if (state is WatchLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const SkeletonSearchResultList();
     }
 
     if (results.isEmpty) {

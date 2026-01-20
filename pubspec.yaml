@@ -46,6 +46,8 @@ dependencies:
   json_annotation: ^4.9.0
   collection: ^1.19.1
   youtube_player_flutter: ^9.0.1
+  shimmer: ^3.0.0
+  liquid_pull_to_refresh: ^3.0.1
   sqflite: ^2.3.0
 
 dev_dependencies:

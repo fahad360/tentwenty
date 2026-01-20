@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 
 import '../../../../features/watch/domain/entities/movie_entity.dart';
 import '../../../../features/booking/presentation/pages/ticket_booking_screen.dart';
@@ -9,6 +10,7 @@ import '../bloc/movie_detail_bloc.dart';
 import '../bloc/movie_detail_event.dart';
 import '../bloc/movie_detail_state.dart';
 import 'video_player_screen.dart';
+import '../../../../core/widgets/skeleton_widgets.dart';
 
 class MovieDetailScreen extends StatefulWidget {
   final MovieEntity movie;
@@ -28,6 +30,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
       child: BlocConsumer<MovieDetailBloc, MovieDetailState>(
         listener: (context, state) {
           if (state is MovieTrailerLoaded) {
+            // ... (existing listener logic)
             final videos = state.videos;
             final trailer =
                 videos.firstWhereOrNull(
@@ -46,8 +49,6 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                 const SnackBar(content: Text('No trailer available')),
               );
             }
-            // Ideally we should reload the previous state here so UI doesn't stay in 'TrailerLoaded' state
-            // But for now, user didn't ask to fix this specific UX glitch if it exists.
           } else if (state is MovieDetailError) {
             ScaffoldMessenger.of(
               context,
@@ -55,6 +56,19 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
           }
         },
         builder: (context, state) {
+          if (state is MovieDetailLoading) {
+            return Scaffold(
+              appBar: AppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ),
+              body: const SkeletonDetailScreen(),
+            );
+          }
           final movie = state is MovieDetailLoaded ? state.movie : widget.movie;
 
           bool isFavorite = false;
@@ -100,13 +114,23 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
   }
 
   Widget _buildPortraitLayout(BuildContext context, MovieEntity movie) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeroHeader(context, movie, isPortrait: true),
-          _buildContent(context, movie),
-        ],
+    return LiquidPullToRefresh(
+      onRefresh: () async {
+        context.read<MovieDetailBloc>().add(GetMovieDetails(movie.id));
+      },
+      color: const Color(0xFF61C3F2), // Accent Color
+      backgroundColor: Colors.white,
+      height: 60,
+      showChildOpacityTransition: false,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeroHeader(context, movie, isPortrait: true),
+            _buildContent(context, movie),
+          ],
+        ),
       ),
     );
   }
@@ -121,10 +145,20 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
         ),
         Expanded(
           flex: 1,
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 100, 20, 20),
-              child: _buildContent(context, movie),
+          child: LiquidPullToRefresh(
+            onRefresh: () async {
+              context.read<MovieDetailBloc>().add(GetMovieDetails(movie.id));
+            },
+            color: const Color(0xFF61C3F2),
+            backgroundColor: Colors.white,
+            height: 60,
+            showChildOpacityTransition: false,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 100, 20, 20),
+                child: _buildContent(context, movie),
+              ),
             ),
           ),
         ),
