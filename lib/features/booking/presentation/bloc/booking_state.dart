@@ -1,29 +1,59 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/theater_entity.dart';
+import '../../data/models/cinema_data.dart';
 
-abstract class BookingState extends Equatable {
-  const BookingState();
+enum BookingStatus { initial, loading, success, error }
 
-  @override
-  List<Object> get props => [];
-}
-
-class BookingInitial extends BookingState {}
-
-class BookingLoading extends BookingState {}
-
-class BookingLoaded extends BookingState {
+class BookingState extends Equatable {
+  final BookingStatus status;
   final List<TheaterEntity> theaters;
-  const BookingLoaded(this.theaters);
+  final int selectedDateIndex;
+  final int? selectedShowtimeIndex;
+  final List<List<Seat>> seats; // Add seats grid
+  final double totalPrice;
+  final String errorMessage;
+
+  const BookingState({
+    this.status = BookingStatus.initial,
+    this.theaters = const [],
+    this.selectedDateIndex = 0,
+    this.selectedShowtimeIndex,
+    this.seats = const [],
+    this.totalPrice = 0,
+    this.errorMessage = '',
+  });
+
+  BookingState copyWith({
+    BookingStatus? status,
+    List<TheaterEntity>? theaters,
+    int? selectedDateIndex,
+    int? selectedShowtimeIndex,
+    bool clearShowtimeSelection = false,
+    List<List<Seat>>? seats,
+    double? totalPrice,
+    String? errorMessage,
+  }) {
+    return BookingState(
+      status: status ?? this.status,
+      theaters: theaters ?? this.theaters,
+      selectedDateIndex: selectedDateIndex ?? this.selectedDateIndex,
+      selectedShowtimeIndex: clearShowtimeSelection
+          ? null
+          : (selectedShowtimeIndex ?? this.selectedShowtimeIndex),
+      seats: seats ?? this.seats,
+      totalPrice: totalPrice ?? this.totalPrice,
+      errorMessage: errorMessage ?? this.errorMessage,
+    );
+  }
 
   @override
-  List<Object> get props => [theaters];
-}
-
-class BookingError extends BookingState {
-  final String message;
-  const BookingError(this.message);
-
-  @override
-  List<Object> get props => [message];
+  List<Object?> get props => [
+    status,
+    theaters,
+    selectedDateIndex,
+    selectedShowtimeIndex,
+    seats,
+    totalPrice,
+    errorMessage,
+  ];
 }

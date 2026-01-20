@@ -26,9 +26,7 @@ class TicketBookingScreen extends StatefulWidget {
 }
 
 class _TicketBookingScreenState extends State<TicketBookingScreen> {
-  int _selectedDateIndex = 0;
-  int? _selectedShowtimeIndex;
-
+  // Dates are still static for now as per previous implementation
   final List<String> _dates = [
     '5 Mar',
     '6 Mar',
@@ -80,11 +78,11 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
         ),
         body: BlocBuilder<BookingBloc, BookingState>(
           builder: (context, state) {
-            if (state is BookingLoading) {
+            if (state.status == BookingStatus.loading) {
               return const SkeletonTicketBooking();
-            } else if (state is BookingError) {
-              return Center(child: Text(state.message));
-            } else if (state is BookingLoaded) {
+            } else if (state.status == BookingStatus.error) {
+              return Center(child: Text(state.errorMessage));
+            } else if (state.status == BookingStatus.success) {
               // Flatten showtimes from all theaters
               final allShowtimes = state.theaters
                   .expand((t) => t.showtimes)
@@ -113,14 +111,10 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
                       separatorBuilder: (context, index) =>
                           const SizedBox(width: 12),
                       itemBuilder: (context, index) {
-                        bool isSelected = _selectedDateIndex == index;
+                        bool isSelected = state.selectedDateIndex == index;
                         return GestureDetector(
                           onTap: () {
-                            setState(() {
-                              _selectedDateIndex = index;
-                              _selectedShowtimeIndex =
-                                  null; // Reset selection on date change
-                            });
+                            context.read<BookingBloc>().add(SelectDate(index));
                           },
                           child: Container(
                             padding: const EdgeInsets.symmetric(
@@ -156,7 +150,12 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
                       separatorBuilder: (context, index) =>
                           const SizedBox(width: 10),
                       itemBuilder: (context, index) {
-                        return _buildShowtimeCard(index, allShowtimes[index]);
+                        return _buildShowtimeCard(
+                          context,
+                          index,
+                          allShowtimes[index],
+                          state,
+                        );
                       },
                     ),
                   ),
@@ -167,42 +166,26 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
                       width: double.infinity,
                       height: 55,
                       child: ElevatedButton(
-                        onPressed: _selectedShowtimeIndex != null
+                        onPressed: state.selectedShowtimeIndex != null
                             ? () {
-                                // For SeatSelection, we need to pass data.
-                                // We'll stick to passing what we have.
-                                // The original code passed a legacy Showtime object.
-                                // We will adapt SeatSelection to accept ShowtimeEntity or Entity.
-                                // OR for now, since SeatSelection isn't my active task to refactor deeply in THIS turn (it was updated previously),
-                                // I assume it accepts what I pass or I map it.
-                                // In previous turn I saw SeatSelectionScreen accept `Showtime`.
-                                // I should check SeatSelectionScreen or just pass dynamic/mock to be safe?
-                                // No, I should map it to the expected type if needed.
-                                // Let's simplify: pass ShowtimeEntity if SeatSelectionScreen was updated (it was touched).
-                                // If not, I'll update SeatSelectionScreen in next step or map here.
-                                // Assuming I need to match the signature.
-                                // Let's map to a simple object or assume SeatSelectionScreen accepts ShowtimeEntity.
-                                // Wait, the previous turn "TicketBookingScreen" passed `legacy.Showtime`.
-                                // I will check SeatSelectionScreen content if I can, but to be fast
-                                // I will Map entity -> legacy.Showtime if needed, but I don't want to import legacy model if I can help it.
-                                // I will update SeatSelectionScreen to use ShowtimeEntity ideally.
-                                // BUT USER said "No need to change anything in the UI."
-                                // I'll assume SeatSelectionScreen can take dynamic or I'll fix it if it breaks.
-                                // Actually, I'll pass the Entity and if it errors I'll fix it.
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) {
+                                    builder: (_) {
                                       final selectedEntity =
-                                          allShowtimes[_selectedShowtimeIndex!];
-                                      return SeatSelectionScreen(
-                                        movie: widget.movie,
-                                        date: _dates[_selectedDateIndex],
-                                        showtime: legacy.Showtime(
-                                          time: selectedEntity.time,
-                                          hallName: selectedEntity.hall,
-                                          price: selectedEntity.price,
-                                          bonus: selectedEntity.bonusPoints,
+                                          allShowtimes[state
+                                              .selectedShowtimeIndex!];
+                                      return BlocProvider.value(
+                                        value: context.read<BookingBloc>(),
+                                        child: SeatSelectionScreen(
+                                          movie: widget.movie,
+                                          date: _dates[state.selectedDateIndex],
+                                          showtime: legacy.Showtime(
+                                            time: selectedEntity.time,
+                                            hallName: selectedEntity.hall,
+                                            price: selectedEntity.price,
+                                            bonus: selectedEntity.bonusPoints,
+                                          ),
                                         ),
                                       );
                                     },
@@ -238,14 +221,17 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
     );
   }
 
-  Widget _buildShowtimeCard(int index, ShowtimeEntity showtime) {
-    bool isSelected = _selectedShowtimeIndex == index;
+  Widget _buildShowtimeCard(
+    BuildContext context,
+    int index,
+    ShowtimeEntity showtime,
+    BookingState state,
+  ) {
+    bool isSelected = state.selectedShowtimeIndex == index;
 
     return GestureDetector(
       onTap: () {
-        setState(() {
-          _selectedShowtimeIndex = index;
-        });
+        context.read<BookingBloc>().add(SelectShowtime(index));
       },
       child: Container(
         margin: const EdgeInsets.only(right: 10),

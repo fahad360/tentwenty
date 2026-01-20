@@ -12,20 +12,29 @@ class WatchBloc extends Bloc<WatchEvent, WatchState> {
   WatchBloc({
     required this.getUpcomingMoviesUseCase,
     required this.searchMoviesUseCase,
-  }) : super(WatchInitial()) {
+  }) : super(const WatchState()) {
     on<GetUpcomingMovies>(_onGetUpcomingMovies);
     on<SearchMovies>(_onSearchMovies);
+    on<ToggleSearch>(_onToggleSearch);
+    on<SearchQueryChanged>(_onSearchQueryChanged);
+    on<SubmitSearch>(_onSubmitSearch);
   }
 
   Future<void> _onGetUpcomingMovies(
     GetUpcomingMovies event,
     Emitter<WatchState> emit,
   ) async {
-    emit(WatchLoading());
+    emit(state.copyWith(status: WatchStatus.loading));
     final result = await getUpcomingMoviesUseCase(NoParams());
     result.fold(
-      (failure) => emit(WatchError(failure.message)),
-      (movies) => emit(WatchLoaded(movies)),
+      (failure) => emit(
+        state.copyWith(
+          status: WatchStatus.error,
+          errorMessage: failure.message,
+        ),
+      ),
+      (movies) =>
+          emit(state.copyWith(status: WatchStatus.success, movies: movies)),
     );
   }
 
@@ -33,11 +42,53 @@ class WatchBloc extends Bloc<WatchEvent, WatchState> {
     SearchMovies event,
     Emitter<WatchState> emit,
   ) async {
-    emit(WatchLoading());
+    emit(state.copyWith(status: WatchStatus.loading));
     final result = await searchMoviesUseCase(event.query);
     result.fold(
-      (failure) => emit(WatchError(failure.message)),
-      (movies) => emit(WatchLoaded(movies)),
+      (failure) => emit(
+        state.copyWith(
+          status: WatchStatus.error,
+          errorMessage: failure.message,
+        ),
+      ),
+      (movies) =>
+          emit(state.copyWith(status: WatchStatus.success, movies: movies)),
     );
+  }
+
+  void _onToggleSearch(ToggleSearch event, Emitter<WatchState> emit) {
+    if (state.isSearchActive) {
+      // Deactivating search, clear query and reset
+      emit(
+        state.copyWith(
+          isSearchActive: false,
+          isSearchSubmitted: false,
+          searchQuery: '',
+        ),
+      );
+      add(GetUpcomingMovies()); // Fetch default list
+    } else {
+      // Activating search
+      emit(state.copyWith(isSearchActive: true));
+    }
+  }
+
+  void _onSearchQueryChanged(
+    SearchQueryChanged event,
+    Emitter<WatchState> emit,
+  ) {
+    emit(state.copyWith(searchQuery: event.query, isSearchSubmitted: false));
+    if (event.query.isEmpty) {
+      add(GetUpcomingMovies());
+    } else {
+      add(SearchMovies(event.query));
+    }
+  }
+
+  void _onSubmitSearch(SubmitSearch event, Emitter<WatchState> emit) {
+    emit(state.copyWith(isSearchSubmitted: true));
+    if (state.searchQuery.isNotEmpty) {
+      add(SearchMovies(state.searchQuery));
+    }
   }
 }

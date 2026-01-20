@@ -22,52 +22,8 @@ class WatchScreen extends StatefulWidget {
 }
 
 class _WatchScreenState extends State<WatchScreen> {
-  // State
-  bool _isSearchActive = false;
-  bool _isSearchSubmitted = false;
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
-
-  // Mock Genres (Keep local for now as no API for genres yet)
-  final List<Genre> _genres = [
-    Genre(
-      title: 'Comedies',
-      imageUrl: 'https://picsum.photos/seed/comedy/400/300',
-    ),
-    Genre(title: 'Crime', imageUrl: 'https://picsum.photos/seed/crime/400/300'),
-    Genre(
-      title: 'Family',
-      imageUrl: 'https://picsum.photos/seed/family/400/300',
-    ),
-    Genre(
-      title: 'Documentaries',
-      imageUrl: 'https://picsum.photos/seed/documentary/400/300',
-    ),
-    Genre(
-      title: 'Dramas',
-      imageUrl: 'https://picsum.photos/seed/drama/400/300',
-    ),
-    Genre(
-      title: 'Fantasy',
-      imageUrl: 'https://picsum.photos/seed/fantasy/400/300',
-    ),
-    Genre(
-      title: 'Holidays',
-      imageUrl: 'https://picsum.photos/seed/holiday/400/300',
-    ),
-    Genre(
-      title: 'Horror',
-      imageUrl: 'https://picsum.photos/seed/horror/400/300',
-    ),
-    Genre(
-      title: 'Sci-Fi',
-      imageUrl: 'https://picsum.photos/seed/scifigenre/400/300',
-    ),
-    Genre(
-      title: 'Thriller',
-      imageUrl: 'https://picsum.photos/seed/thriller/400/300',
-    ),
-  ];
 
   @override
   void dispose() {
@@ -76,76 +32,53 @@ class _WatchScreenState extends State<WatchScreen> {
     super.dispose();
   }
 
-  void _toggleSearch(BuildContext context) {
-    setState(() {
-      _isSearchActive = !_isSearchActive;
-      if (!_isSearchActive) {
-        _searchController.clear();
-        _isSearchSubmitted = false;
-        // Reset to initial state
-        context.read<WatchBloc>().add(GetUpcomingMovies());
-      }
-    });
-  }
-
   void _onSearchChanged(BuildContext context, String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
 
-    // Reset submitted state if user types again
-    if (_isSearchSubmitted) {
-      setState(() {
-        _isSearchSubmitted = false;
-      });
-    }
-
     _debounce = Timer(const Duration(milliseconds: 800), () {
-      if (query.isNotEmpty) {
-        context.read<WatchBloc>().add(SearchMovies(query));
-      } else {
-        context.read<WatchBloc>().add(GetUpcomingMovies());
-      }
+      context.read<WatchBloc>().add(SearchQueryChanged(query));
     });
-  }
-
-  void _onSearchSubmitted(BuildContext context, String query) {
-    if (query.isEmpty) return;
-    setState(() {
-      _isSearchSubmitted = true;
-    });
-    context.read<WatchBloc>().add(SearchMovies(query));
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => sl<WatchBloc>()..add(GetUpcomingMovies()),
-      child: Builder(
-        builder: (context) {
+      child: BlocConsumer<WatchBloc, WatchState>(
+        listener: (context, state) {
+          // Sync controller if needed, but usually on change is one way
+          if (!state.isSearchActive && _searchController.text.isNotEmpty) {
+            _searchController.clear();
+          }
+        },
+        builder: (context, state) {
           return Scaffold(
-            appBar: _isSearchActive
+            appBar: state.isSearchActive
                 ? null
                 : AppBar(
                     title: const Text('Watch'),
                     actions: [
                       IconButton(
                         icon: const Icon(Icons.search),
-                        onPressed: () => _toggleSearch(context),
+                        onPressed: () {
+                          context.read<WatchBloc>().add(ToggleSearch());
+                        },
                       ),
                     ],
                   ),
-            body: BlocBuilder<WatchBloc, WatchState>(
-              builder: (context, state) {
-                if (_isSearchSubmitted) {
-                  if (state is WatchLoaded) {
+            body: Builder(
+              builder: (context) {
+                if (state.isSearchSubmitted) {
+                  if (state.status == WatchStatus.success) {
                     return _buildResultsFoundView(context, state.movies);
-                  } else if (state is WatchLoading) {
+                  } else if (state.status == WatchStatus.loading) {
                     return const SkeletonSearchResultList();
-                  } else if (state is WatchError) {
-                    return Center(child: Text(state.message));
+                  } else if (state.status == WatchStatus.error) {
+                    return Center(child: Text(state.errorMessage));
                   }
                 }
 
-                return _isSearchActive
+                return state.isSearchActive
                     ? _buildSearchInputView(context, state)
                     : _buildMovieListView(context, state);
               },
@@ -159,11 +92,11 @@ class _WatchScreenState extends State<WatchScreen> {
   // --- View Builders ---
 
   Widget _buildMovieListView(BuildContext context, WatchState state) {
-    if (state is WatchLoading) {
+    if (state.status == WatchStatus.loading) {
       return const SkeletonHorizontalList();
-    } else if (state is WatchError) {
-      return Center(child: Text(state.message));
-    } else if (state is WatchLoaded) {
+    } else if (state.status == WatchStatus.error) {
+      return Center(child: Text(state.errorMessage));
+    } else if (state.status == WatchStatus.success) {
       return LiquidPullToRefresh(
         onRefresh: () async {
           context.read<WatchBloc>().add(GetUpcomingMovies());
@@ -186,13 +119,8 @@ class _WatchScreenState extends State<WatchScreen> {
   }
 
   Widget _buildSearchInputView(BuildContext context, WatchState state) {
-    bool showTopResults = _searchController.text.isNotEmpty;
-
-    // If we are searching, check if we have results
-    List<MovieEntity> results = [];
-    if (state is WatchLoaded) {
-      results = state.movies;
-    }
+    bool showTopResults = state.searchQuery.isNotEmpty;
+    List<MovieEntity> results = state.movies;
 
     return Column(
       children: [
@@ -208,7 +136,9 @@ class _WatchScreenState extends State<WatchScreen> {
             child: TextField(
               controller: _searchController,
               onChanged: (val) => _onSearchChanged(context, val),
-              onSubmitted: (val) => _onSearchSubmitted(context, val),
+              onSubmitted: (val) {
+                context.read<WatchBloc>().add(SubmitSearch());
+              },
               decoration: InputDecoration(
                 filled: true,
                 fillColor: const Color(0xFFEFEFEF),
@@ -217,7 +147,9 @@ class _WatchScreenState extends State<WatchScreen> {
                 prefixIcon: const Icon(Icons.search, color: Color(0xFF2E2739)),
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.close, color: Color(0xFF2E2739)),
-                  onPressed: () => _toggleSearch(context),
+                  onPressed: () {
+                    context.read<WatchBloc>().add(ToggleSearch());
+                  },
                 ),
                 contentPadding: const EdgeInsets.symmetric(vertical: 0),
                 border: OutlineInputBorder(
@@ -241,6 +173,50 @@ class _WatchScreenState extends State<WatchScreen> {
   }
 
   Widget _buildGenreGrid() {
+    // Mock Genres (moved locally or kept locally inside widget for now as they are static mock)
+    final List<Genre> genres = [
+      Genre(
+        title: 'Comedies',
+        imageUrl: 'https://picsum.photos/seed/comedy/400/300',
+      ),
+      Genre(
+        title: 'Crime',
+        imageUrl: 'https://picsum.photos/seed/crime/400/300',
+      ),
+      Genre(
+        title: 'Family',
+        imageUrl: 'https://picsum.photos/seed/family/400/300',
+      ),
+      Genre(
+        title: 'Documentaries',
+        imageUrl: 'https://picsum.photos/seed/documentary/400/300',
+      ),
+      Genre(
+        title: 'Dramas',
+        imageUrl: 'https://picsum.photos/seed/drama/400/300',
+      ),
+      Genre(
+        title: 'Fantasy',
+        imageUrl: 'https://picsum.photos/seed/fantasy/400/300',
+      ),
+      Genre(
+        title: 'Holidays',
+        imageUrl: 'https://picsum.photos/seed/holiday/400/300',
+      ),
+      Genre(
+        title: 'Horror',
+        imageUrl: 'https://picsum.photos/seed/horror/400/300',
+      ),
+      Genre(
+        title: 'Sci-Fi',
+        imageUrl: 'https://picsum.photos/seed/scifigenre/400/300',
+      ),
+      Genre(
+        title: 'Thriller',
+        imageUrl: 'https://picsum.photos/seed/thriller/400/300',
+      ),
+    ];
+
     return GridView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -249,15 +225,15 @@ class _WatchScreenState extends State<WatchScreen> {
         mainAxisSpacing: 10,
         childAspectRatio: 1.63,
       ),
-      itemCount: _genres.length,
+      itemCount: genres.length,
       itemBuilder: (context, index) {
-        return GenreCard(genre: _genres[index]);
+        return GenreCard(genre: genres[index]);
       },
     );
   }
 
   Widget _buildTopResultsList(WatchState state, List<MovieEntity> results) {
-    if (state is WatchLoading) {
+    if (state.status == WatchStatus.loading) {
       return const SkeletonSearchResultList();
     }
 
@@ -314,11 +290,13 @@ class _WatchScreenState extends State<WatchScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
           onPressed: () {
-            setState(() {
-              _isSearchSubmitted = false;
-            });
-            // Revert to search active state visuals with previous query
-            // Ideally we re-fetch if needed or keep state
+            // Cancel search submission via Bloc
+            context.read<WatchBloc>().add(
+              SearchQueryChanged(context.read<WatchBloc>().state.searchQuery),
+            );
+            // Or better, just toggle submission off?
+            // Since we track `isSearchSubmitted`, we can have an event `CancelSearchSubmission` or reusing `SearchQueryChanged` effectively resets it based on logic.
+            // Actually my logic for SearchQueryChanged sets isSearchSubmitted = false. So sending current query works.
           },
         ),
         title: Text(

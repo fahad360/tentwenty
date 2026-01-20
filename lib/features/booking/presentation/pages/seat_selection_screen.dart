@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../watch/domain/entities/movie_entity.dart';
 import '../../data/models/cinema_data.dart';
+import '../bloc/booking_bloc.dart';
+import '../bloc/booking_state.dart';
+import '../bloc/booking_event.dart';
 
 class SeatSelectionScreen extends StatefulWidget {
   final MovieEntity movie;
@@ -20,13 +24,15 @@ class SeatSelectionScreen extends StatefulWidget {
 }
 
 class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
-  // Generate dummy seat layout
-  late List<List<Seat>> _seatGrid;
-  final int _rows = 10;
-  final int _cols = 24; // Wide layout
-
   final TransformationController _transformationController =
       TransformationController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Load seats when entering the screen
+    context.read<BookingBloc>().add(const LoadSeats());
+  }
 
   @override
   void dispose() {
@@ -35,76 +41,23 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
   }
 
   void _zoomIn() {
-    setState(() {
-      final matrix = _transformationController.value;
-      final currentScale = matrix.getMaxScaleOnAxis();
-      if (currentScale < 3.0) {
-        // Zoom in logic: Scale from the center
-        final zoomFactor = 1.2;
-        final zoomedMatrix = matrix.clone()..scale(zoomFactor);
-        _transformationController.value = zoomedMatrix;
-      }
-    });
+    final matrix = _transformationController.value;
+    final currentScale = matrix.getMaxScaleOnAxis();
+    if (currentScale < 3.0) {
+      final zoomFactor = 1.2;
+      final zoomedMatrix = matrix.clone()..scale(zoomFactor);
+      _transformationController.value = zoomedMatrix;
+    }
   }
 
   void _zoomOut() {
-    setState(() {
-      final matrix = _transformationController.value;
-      final currentScale = matrix.getMaxScaleOnAxis();
-      if (currentScale > 0.5) {
-        // Zoom out logic
-        final zoomFactor = 0.8;
-        final zoomedMatrix = matrix.clone()..scale(zoomFactor);
-        _transformationController.value = zoomedMatrix;
-      }
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _seatGrid = List.generate(_rows, (rowIndex) {
-      return List.generate(_cols, (colIndex) {
-        // Mock data logic
-        SeatStatus status = SeatStatus.available;
-        SeatType type = SeatType.regular;
-
-        // Randomly assign some seats as taken or VIP
-        if ((rowIndex + colIndex) % 11 == 0) status = SeatStatus.taken;
-        if (rowIndex > 7) type = SeatType.vip;
-
-        return Seat(
-          row: rowIndex + 1,
-          number: colIndex + 1,
-          type: type,
-          status: status,
-          price: type == SeatType.vip ? 150 : 50,
-        );
-      });
-    });
-  }
-
-  void _toggleSeat(int r, int c) {
-    setState(() {
-      final seat = _seatGrid[r][c];
-      if (seat.status == SeatStatus.available) {
-        seat.status = SeatStatus.selected;
-      } else if (seat.status == SeatStatus.selected) {
-        seat.status = SeatStatus.available;
-      }
-    });
-  }
-
-  double get _totalPrice {
-    double total = 0;
-    for (var row in _seatGrid) {
-      for (var seat in row) {
-        if (seat.status == SeatStatus.selected) {
-          total += seat.price;
-        }
-      }
+    final matrix = _transformationController.value;
+    final currentScale = matrix.getMaxScaleOnAxis();
+    if (currentScale > 0.5) {
+      final zoomFactor = 0.8;
+      final zoomedMatrix = matrix.clone()..scale(zoomFactor);
+      _transformationController.value = zoomedMatrix;
     }
-    return total;
   }
 
   @override
@@ -141,232 +94,265 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
         ),
         centerTitle: true,
       ),
-      body: Column(
-        children: [
-          // ... (existing code)
+      body: BlocBuilder<BookingBloc, BookingState>(
+        builder: (context, state) {
+          if (state.seats.isEmpty) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-          // Seat Map
-          Expanded(
-            child: InteractiveViewer(
-              transformationController: _transformationController,
-              panEnabled: true,
-              scaleEnabled: true,
-              minScale: 0.5,
-              maxScale: 3.0,
-              constrained: false,
-              boundaryMargin: const EdgeInsets.all(100),
-              child: Padding(
-                padding: const EdgeInsets.all(40.0),
+          int selectedCount = 0;
+          for (var row in state.seats) {
+            for (var seat in row) {
+              if (seat.status == SeatStatus.selected) selectedCount++;
+            }
+          }
+
+          return Column(
+            children: [
+              // Seat Map
+              Expanded(
+                child: InteractiveViewer(
+                  transformationController: _transformationController,
+                  panEnabled: true,
+                  scaleEnabled: true,
+                  minScale: 0.5,
+                  maxScale: 3.0,
+                  constrained: false,
+                  boundaryMargin: const EdgeInsets.all(100),
+                  child: Padding(
+                    padding: const EdgeInsets.all(40.0),
+                    child: Column(
+                      children: [
+                        // Screen Curve
+                        CustomPaint(
+                          size: const Size(400, 50),
+                          painter: ScreenPainter(),
+                        ),
+                        const SizedBox(height: 20),
+                        const Text(
+                          "SCREEN",
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Color(0xFF8F8F8F),
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+
+                        // Seats
+                        ...List.generate(state.seats.length, (i) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Row number
+                                SizedBox(
+                                  width: 20,
+                                  child: Text(
+                                    '${i + 1}',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFF202C43),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 20),
+                                ...List.generate(state.seats[i].length, (j) {
+                                  // Add aisle gap
+                                  if (j == 6 || j == 18) {
+                                    return const SizedBox(width: 30);
+                                  }
+                                  return _buildSeatItem(
+                                    context,
+                                    state.seats[i][j],
+                                  );
+                                }),
+                              ],
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+              // Controls to Zoom
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(right: 20, bottom: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.add),
+                          onPressed: _zoomIn,
+                        ),
+                        const Divider(height: 1),
+                        IconButton(
+                          icon: const Icon(Icons.remove),
+                          onPressed: _zoomOut,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              // Legend and Footer
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                ),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Screen Curve
-                    CustomPaint(
-                      size: const Size(400, 50),
-                      painter: ScreenPainter(),
+                    // Legend
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildLegendItem(const Color(0xFFCD9D0F), 'Selected'),
+                        _buildLegendItem(
+                          const Color(0xFFA6A6A6),
+                          'Not available',
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildLegendItem(
+                          const Color(0xFF564CA3),
+                          'VIP (150\$)',
+                        ),
+                        _buildLegendItem(
+                          const Color(0xFF61C3F2),
+                          'Regular (50 \$)',
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 20),
-                    const Text(
-                      "SCREEN",
-                      style: TextStyle(fontSize: 10, color: Color(0xFF8F8F8F)),
-                    ),
-                    const SizedBox(height: 30),
 
-                    // Seats
-                    ...List.generate(_rows, (i) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // Row number
-                            SizedBox(
-                              width: 20,
-                              child: Text(
-                                '${i + 1}',
-                                style: const TextStyle(
+                    // Seat chips (Mock selection)
+                    if (selectedCount > 0)
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0x1A000000),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Row(
+                              children: [
+                                Text(
+                                  '$selectedCount / ',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const Text(
+                                  'tickets',
+                                  style: TextStyle(fontSize: 10),
+                                ),
+                                const SizedBox(width: 5),
+                                const Icon(Icons.close, size: 14),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    const SizedBox(height: 20),
+
+                    // Total and Pay
+                    Row(
+                      children: [
+                        Container(
+                          height: 60,
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          decoration: BoxDecoration(
+                            color: const Color(0x1A000000),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Total Price',
+                                style: TextStyle(
                                   fontSize: 12,
-                                  color: Color(0xFF202C43),
+                                  color: Color(0xFF8F8F8F),
+                                ),
+                              ),
+                              Text(
+                                '\$ ${state.totalPrice.toInt()}',
+                                style: const TextStyle(
+                                  fontSize: 20,
                                   fontWeight: FontWeight.bold,
+                                  color: Color(0xFF202C43),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 15),
+                        Expanded(
+                          child: SizedBox(
+                            height: 60,
+                            child: ElevatedButton(
+                              onPressed: () {},
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF61C3F2),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: const Text(
+                                'Proceed to pay',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 20),
-                            ...List.generate(_cols, (j) {
-                              // Add aisle gap
-                              if (j == 6 || j == 18) {
-                                return const SizedBox(width: 30);
-                              }
-                              return _buildSeatItem(i, j);
-                            }),
-                          ],
+                          ),
                         ),
-                      );
-                    }),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // Controls to Zoom
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              Container(
-                margin: const EdgeInsets.only(right: 20, bottom: 10),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 4,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    IconButton(icon: const Icon(Icons.add), onPressed: _zoomIn),
-                    const Divider(height: 1),
-                    IconButton(
-                      icon: const Icon(Icons.remove),
-                      onPressed: _zoomOut,
+                      ],
                     ),
                   ],
                 ),
               ),
             ],
-          ),
-
-          // Legend and Footer
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
-              ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Legend
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildLegendItem(const Color(0xFFCD9D0F), 'Selected'),
-                    _buildLegendItem(const Color(0xFFA6A6A6), 'Not available'),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildLegendItem(const Color(0xFF564CA3), 'VIP (150\$)'),
-                    _buildLegendItem(
-                      const Color(0xFF61C3F2),
-                      'Regular (50 \$)',
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-
-                // Seat chips (Mock selection)
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0x1A000000),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        children: const [
-                          Text(
-                            '4 / ',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          Text('3 row', style: TextStyle(fontSize: 10)),
-                          SizedBox(width: 5),
-                          Icon(Icons.close, size: 14),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-
-                // Total and Pay
-                Row(
-                  children: [
-                    Container(
-                      height: 60,
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      decoration: BoxDecoration(
-                        color: const Color(0x1A000000),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Total Price',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Color(0xFF8F8F8F),
-                            ),
-                          ),
-                          Text(
-                            '\$ ${_totalPrice.toInt()}',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF202C43),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 15),
-                    Expanded(
-                      child: SizedBox(
-                        height: 60,
-                        child: ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF61C3F2),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child: const Text(
-                            'Proceed to pay',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 
-  Widget _buildSeatItem(int r, int c) {
-    final seat = _seatGrid[r][c];
+  Widget _buildSeatItem(BuildContext context, Seat seat) {
     Color color;
 
     if (seat.status == SeatStatus.selected) {
@@ -380,7 +366,13 @@ class _SeatSelectionScreenState extends State<SeatSelectionScreen> {
     }
 
     return GestureDetector(
-      onTap: seat.status == SeatStatus.taken ? null : () => _toggleSeat(r, c),
+      onTap: seat.status == SeatStatus.taken
+          ? null
+          : () {
+              context.read<BookingBloc>().add(
+                ToggleSeat(seat.row, seat.number),
+              );
+            },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 3),
         width: 20,
