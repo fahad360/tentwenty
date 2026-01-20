@@ -10,7 +10,7 @@ class AppTheme {
       primaryColor: AppColors.darkPurple,
       colorScheme: ColorScheme.fromSeed(
         seedColor: AppColors.darkPurple,
-        surface: AppColors.background, // Updated naming for M3
+        surface: AppColors.background,
       ),
       textTheme: GoogleFonts.poppinsTextTheme(),
       appBarTheme: const AppBarTheme(

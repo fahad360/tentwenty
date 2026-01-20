@@ -75,7 +75,7 @@ class MovieModel extends MovieEntity {
   Map<String, dynamic> toJson() => _$MovieModelToJson(this);
 }
 
-@JsonSerializable()
+@JsonSerializable(createToJson: false)
 class MovieResponse {
   final List<MovieModel> results;
 

@@ -7,7 +7,6 @@ class GenreGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Mock Genres
     final List<Genre> genres = [
       Genre(
         title: 'Comedies',

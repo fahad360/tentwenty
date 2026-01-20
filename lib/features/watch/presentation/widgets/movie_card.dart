@@ -29,7 +29,7 @@ class MovieCard extends StatelessWidget {
               ? DecorationImage(
                   image: NetworkImage(movie.imageUrl),
                   fit: BoxFit.cover,
-                  onError: (exception, stackTrace) {}, // Handle network errors
+                  onError: (exception, stackTrace) {},
                 )
               : null,
         ),

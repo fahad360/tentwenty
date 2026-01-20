@@ -18,7 +18,7 @@ class VideoModel extends VideoEntity {
   Map<String, dynamic> toJson() => _$VideoModelToJson(this);
 }
 
-@JsonSerializable()
+@JsonSerializable(createToJson: false)
 class VideoResponse {
   final List<VideoModel> results;
 

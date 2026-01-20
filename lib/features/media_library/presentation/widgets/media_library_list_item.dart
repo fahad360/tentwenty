@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tentwenty/features/media_library/presentation/bloc/favorites_event.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../watch/domain/entities/movie_entity.dart';
 import '../../../movie_details/presentation/pages/movie_detail_screen.dart';

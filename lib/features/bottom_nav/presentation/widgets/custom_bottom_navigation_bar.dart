@@ -25,23 +25,32 @@ class CustomBottomNavigationBar extends StatelessWidget {
               topLeft: Radius.circular(27),
               topRight: Radius.circular(27),
             ),
-            child: BottomNavigationBar(
-              currentIndex: state.index,
-              onTap: (index) {
-                context.read<BottomNavCubit>().changeIndex(index);
-              },
-              backgroundColor: AppColors.darkPurple,
-              type: BottomNavigationBarType.fixed,
-              selectedItemColor: AppColors.white,
-              unselectedItemColor: AppColors.greyText,
-              showUnselectedLabels: true,
-              elevation: 0,
-              items: [
-                _buildNavItem('assets/svgs/dashboard.svg', 'Dashboard'),
-                _buildNavItem('assets/svgs/watch.svg', 'Watch'),
-                _buildNavItem('assets/svgs/media_library.svg', 'Media Library'),
-                _buildNavItem('assets/svgs/more.svg', 'More'),
-              ],
+            child: Theme(
+              data: Theme.of(context).copyWith(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+              ),
+              child: BottomNavigationBar(
+                currentIndex: state.index,
+                onTap: (index) {
+                  context.read<BottomNavCubit>().changeIndex(index);
+                },
+                backgroundColor: AppColors.darkPurple,
+                type: BottomNavigationBarType.fixed,
+                selectedItemColor: AppColors.white,
+                unselectedItemColor: AppColors.greyText,
+                showUnselectedLabels: true,
+                elevation: 0,
+                items: [
+                  _buildNavItem('assets/svgs/dashboard.svg', 'Dashboard'),
+                  _buildNavItem('assets/svgs/watch.svg', 'Watch'),
+                  _buildNavItem(
+                    'assets/svgs/media_library.svg',
+                    'Media Library',
+                  ),
+                  _buildNavItem('assets/svgs/more.svg', 'More'),
+                ],
+              ),
             ),
           ),
         );

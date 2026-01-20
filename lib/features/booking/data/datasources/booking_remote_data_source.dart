@@ -5,7 +5,6 @@ abstract class BookingRemoteDataSource {
 }
 
 class BookingRemoteDataSourceImpl implements BookingRemoteDataSource {
-  // Mock Data
   final List<TheaterModel> _mockTheaters = const [
     TheaterModel(
       name: 'Cinetech + Hall 1',

@@ -58,7 +58,6 @@ class WatchBloc extends Bloc<WatchEvent, WatchState> {
 
   void _onToggleSearch(ToggleSearch event, Emitter<WatchState> emit) {
     if (state.isSearchActive) {
-      // Deactivating search, clear query and reset
       emit(
         state.copyWith(
           isSearchActive: false,
@@ -66,9 +65,8 @@ class WatchBloc extends Bloc<WatchEvent, WatchState> {
           searchQuery: '',
         ),
       );
-      add(GetUpcomingMovies()); // Fetch default list
+      add(GetUpcomingMovies());
     } else {
-      // Activating search
       emit(state.copyWith(isSearchActive: true));
     }
   }

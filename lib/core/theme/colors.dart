@@ -16,14 +16,14 @@ class AppColors {
   static const Color greyLabel = Color(0xFF8F8F8F);
 
   // Seat Colors
-  static const Color seatSelected = Color(0xFFCD9D0F); // Gold
-  static const Color seatTaken = Color(0xFFA6A6A6); // Grey
-  static const Color seatVip = Color(0xFF564CA3); // Purple
+  static const Color seatSelected = Color(0xFFCD9D0F);
+  static const Color seatTaken = Color(0xFFA6A6A6); 
+  static const Color seatVip = Color(0xFF564CA3);
   static const Color seatRegular = lightBlue;
 
   static const Color gold = seatSelected;
   static const Color purple = seatVip;
-  static const Color darkGrey = Color(0xFF8F8F8F); // Alias for greyLabel
+  static const Color darkGrey = Color(0xFF8F8F8F);
 
   // Standard Colors
   static const Color white = Colors.white;
@@ -31,9 +31,9 @@ class AppColors {
   static const Color transparent = Colors.transparent;
   static const Color grey = Colors.grey;
   static const Color mediumGrey = Color(0xFFB1B1B1);
-  static const Color shimmerBase = Color(0xFFE0E0E0); // Colors.grey[300]
-  static const Color shimmerHighlight = Color(0xFFF5F5F5); // Colors.grey[100]
+  static const Color shimmerBase = Color(0xFFE0E0E0); 
+  static const Color shimmerHighlight = Color(0xFFF5F5F5); 
   static const Color imagePlaceholder = Color(0xFFDDDDDD);
   static const Color red = Colors.red;
-  static const Color darkerGrey = Color(0xFF424242); // Colors.grey[800]
+  static const Color darkerGrey = Color(0xFF424242);
 }

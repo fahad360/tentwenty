@@ -39,8 +39,3 @@ MovieResponse _$MovieResponseFromJson(Map<String, dynamic> json) =>
           .map((e) => MovieModel.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
-
-Map<String, dynamic> _$MovieResponseToJson(MovieResponse instance) =>
-    <String, dynamic>{
-      'results': instance.results,
-    };

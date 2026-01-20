@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 class MovieEntity extends Equatable {
-  final int id; // Added ID for detailed fetching
+  final int id;
   final String title;
   final String imageUrl;
   final String category;

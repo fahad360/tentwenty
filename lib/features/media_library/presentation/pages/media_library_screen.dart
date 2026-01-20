@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tentwenty/features/media_library/presentation/bloc/favorites_event.dart';
+import 'package:tentwenty/features/media_library/presentation/bloc/favorites_state.dart';
 import '../../../../injection_container.dart';
 import '../bloc/favorites_bloc.dart';
 import '../../../../core/widgets/skeleton_widgets.dart';

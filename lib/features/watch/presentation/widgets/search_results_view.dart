@@ -23,7 +23,6 @@ class SearchResultsView extends StatelessWidget {
             size: 20,
           ),
           onPressed: () {
-            // Revert search submission
             context.read<WatchBloc>().add(
               SearchQueryChanged(context.read<WatchBloc>().state.searchQuery),
             );

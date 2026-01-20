@@ -27,8 +27,3 @@ VideoResponse _$VideoResponseFromJson(Map<String, dynamic> json) =>
           .map((e) => VideoModel.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
-
-Map<String, dynamic> _$VideoResponseToJson(VideoResponse instance) =>
-    <String, dynamic>{
-      'results': instance.results,
-    };

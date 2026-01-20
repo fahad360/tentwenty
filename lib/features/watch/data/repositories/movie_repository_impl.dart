@@ -23,7 +23,6 @@ class MovieRepositoryImpl implements MovieRepository {
       final movieResponse = await _movieService.getUpcomingMovies();
       return Right(movieResponse.results);
     } catch (e) {
-      // Fallback to offline favorites
       try {
         final localMovies = await DatabaseHelper().getFavorites();
         if (localMovies.isNotEmpty) {
